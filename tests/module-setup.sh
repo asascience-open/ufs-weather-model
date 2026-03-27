@@ -86,6 +86,9 @@ elif [[ ${MACHINE_ID} = noaacloud ]] ; then
     # We are on NOAA Cloud
     module purge
 
+elif  [[ ${MACHINE_ID} = ioossb ]] ; then
+    echo $MODULEPATH
+    module purge
 else
     echo WARNING: UNKNOWN PLATFORM 1>&2
 fi

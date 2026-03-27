@@ -9,6 +9,7 @@
 # Thank you for your contribution
 
 # If the MACHINE_ID variable is set, skip this script.
+echo $MACHINE_ID
 [[ -n ${MACHINE_ID:-} ]] && return
 
 # First detect w/ hostname
@@ -57,6 +58,9 @@ case $(hostname -f) in
   c*.frontera.tacc.utexas.edu) MACHINE_ID=frontera ;; ### frontera compute 
 
   discover3[1-5].prv.cube) MACHINE_ID=discover ;; ### discover31-35
+
+  ioossb*) MACHINE_ID=ioossb ;; # AWS IOOS Cloud Sandbox
+
   *) MACHINE_ID=UNKNOWN ;;  # Unknown platform
 esac
 

@@ -548,6 +548,8 @@ trap '{ handle_error $? $LINENO ; }' ERR
 trap '{ echo "rt.sh finished"; cleanup ; }' EXIT
 
 
+#### Main Start ####
+
 # PATHRT - Path to regression tests directory
 PATHRT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 readonly PATHRT
@@ -1012,6 +1014,25 @@ case ${MACHINE_ID} in
     SCHEDULER=slurm
     export MPIEXEC="ibrun"
     export MPIEXECOPTS=
+    ;;
+  ioossb)
+    echo "rt.sh: Setting up $MACHINE_ID ..."
+    # export PATH="/contrib/EPIC/bin:${PATH}"
+    # module use /apps/modules/modulefiles
+
+    #if [[ "${ROCOTO:-false}" == true ]] ; then
+    #  module load rocoto/1.3.7
+    #  ROCOTO_SCHEDULER=slurm
+    #fi
+
+    #QUEUE="batch"
+    #COMPILE_QUEUE="batch"
+    #PARTITION=
+    #dprefix=${dprefix:-"/lustre/"}
+    #DISKNM="/contrib/ufs-weather-model/RT"
+    #STMP="${dprefix}/stmp4"
+    #PTMP="${dprefix}/stmp2"
+    SCHEDULER="NONE"
     ;;
   *)
     die "Unknown machine ID, please edit detect_machine.sh file"
