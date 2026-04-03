@@ -433,6 +433,36 @@ elif [[ ${MACHINE_ID} = frontera ]]; then
 
   TPN=56
 
+elif [[ ${MACHINE_ID} = ioossb ]]; then
+
+  echo "In default_vars $MACHINE_ID, setting TPN ..."
+  TPN=96
+
+  # TODO: this does not fit with cloudflow, but we 
+  # won't be using rt.sh, just using it now to start with
+  # These will be set dynamically depending on the type and number of compute nodes used
+
+  export INPES_dflt=3
+  export JNPES_dflt=8
+
+  export INPES_thrd=3
+  export JNPES_thrd=4
+
+  export INPES_c384=8
+  export JNPES_c384=6
+  export THRD_c384=1
+
+  export INPES_c768=8
+  export JNPES_c768=16
+  export THRD_c768=1
+
+  export THRD_cpl_atmw_gdas=1
+  export INPES_cpl_atmw_gdas=6
+  export JNPES_cpl_atmw_gdas=8
+
+  export WPG_cpl_atmw_gdas=24
+  export WAV_tasks_atmw_gdas=248
+
 else
 
   echo "Unknown MACHINE_ID ${MACHINE_ID}"

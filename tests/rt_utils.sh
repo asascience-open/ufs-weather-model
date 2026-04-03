@@ -231,6 +231,7 @@ function compute_petbounds_and_tasks_esmf_threading() {
   export TASKS=${UFS_tasks}
 }
 
+
 interrupt_job() {
   echo "rt_utils.sh: Job ${jobid} interrupted"
   case ${SCHEDULER} in
@@ -251,6 +252,8 @@ submit_and_wait() {
   [[ -z $1 ]] && exit 1
 
   local -r job_card=$1
+  echo "PT DEBUG: job_card=$1"
+  cat $job_card
 
   case ${SCHEDULER} in
     pbs)
@@ -262,6 +265,13 @@ submit_and_wait() {
       slurmout=$( sbatch "${job_card}" )
       re='Submitted batch job ([0-9]+)'
       [[ "${slurmout}" =~ ${re} ]] && jobid=${BASH_REMATCH[1]}
+      ;;
+    cloudflow)   # TODO: Could also just be local instead cloudflow
+      echo "PT: Not using slurm or pbs ... using cloudflow"
+      echo "PT: just run the job immediately here"
+      chmod u+x $job_card
+      ./$job_card &
+      jobid=$!
       ;;
     *)
       echo "Unsupported scheduler: ${SCHEDULER}"
@@ -285,6 +295,9 @@ submit_and_wait() {
         ;;
       slurm)
         job_info=$( squeue -u "${USER}" -j "${jobid}" )
+        ;;
+      cloudflow)
+        job_info=$( ps -p "${jobid}" )
         ;;
       *)
         ;;
@@ -339,6 +352,17 @@ submit_and_wait() {
         status=$( grep "${jobid}" <<< "${job_info}" )
         status=$( awk '{print $2}' <<< "${status}" )
         ;;
+      cloudflow)
+        job_info=$( ps -p "${jobid}" )
+          if grep -q "${jobid}" <<< "${job_info}"; then
+            job_running=true
+            status='RUNNING'
+          else
+            job_running=false
+            status='COMPLETED'
+            echo "PT DEBUG: TODO - check for failed status"
+          fi
+        ;;
       *)
         ;;
     esac
@@ -390,6 +414,7 @@ submit_and_wait() {
   done
 }
 
+
 kill_job() {
   echo "rt_utils.sh: Killing job: ${jobid} on ${SCHEDULER}..."
   [[ -z $1 ]] && exit 1
@@ -400,8 +425,12 @@ kill_job() {
     qdel "${jobid}"
   elif [[ ${SCHEDULER} = 'slurm' ]]; then
     scancel "${jobid}"
+  elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
+    kill "${jobid}"
   fi
 }
+
+
 
 rocoto_create_compile_task() {
   echo "rt_utils.sh: ${COMPILE_ID}: Creating ROCOTO compile task."
@@ -530,6 +559,8 @@ EOF
 
 }
 
+
+
 rocoto_kill() {
   echo "rt_utils.sh: Killing ROCOTO Workflow..."
   job_id_in=$( "${ROCOTOSTAT}" -w "${ROCOTO_XML}" -d "${ROCOTO_DB}" )
@@ -598,6 +629,9 @@ rocoto_run() {
 }
 
 
+
+
+
 ecflow_create_compile_task() {
   echo "rt_utils.sh: ${COMPILE_ID}: Creating ECFLOW compile task"
   export new_compile=true
@@ -617,6 +651,10 @@ EOF
   echo "      inlimit max_builds"
   } >> "${ECFLOW_RUN}/${ECFLOW_SUITE}.def"
 }
+
+
+# PT someone never learned how to use whitespace to make code more readable!
+
 
 ecflow_create_run_task() {
   echo "rt_utils.sh: ${TEST_ID}: Creating ECFLOW run task"
@@ -640,6 +678,8 @@ EOF
   fi
 
 }
+
+
 
 ecflow_run() {
   echo "rt_utils.sh: Starting ECFLOW run"

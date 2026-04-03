@@ -54,6 +54,7 @@ BUILD_JOBS=${BUILD_JOBS:-8}
 
 #hostname
 
+echo "PT DEBUG: in comple.sh MACHINE_ID: $MACHINE_ID"
 set +x
 case ${MACHINE_ID} in
   macosx|linux)
@@ -70,9 +71,19 @@ case ${MACHINE_ID} in
       module purge
     fi
 
+    if [[ ${MACHINE_ID} == ioossb ]]; then
+      module purge
+
+      # newer gcc is needed for libm 
+      source /opt/rh/gcc-toolset-13/enable
+      BUILD_JOBS=2
+    fi
+
     # Load fv3 module
     module use "${PATHTR}/modulefiles"
     modulefile="ufs_${MACHINE_ID}.${RT_COMPILER}"
+    echo "PT DEBUG: trying to load modulefile: $modulefile"
+    echo "PT DEBUG: module using ${PATHTR}/modulefiles"
     module load "${modulefile}"
     module list
 esac

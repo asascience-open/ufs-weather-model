@@ -20,6 +20,7 @@ write_fail_test() {
   if [[ ${ROCOTO:-false} == true ]] || [[ ${ECFLOW:-false} == true ]]; then
     # if this script has been submitted by a workflow return non-zero exit status
     # so that workflow can resubmit it
+    #PT: Sincere thank you to whoever commented this function!
     exit 1
   else
     # if this script has been executed interactively, return zero exit status
@@ -454,6 +455,10 @@ if [[ ${SCHEDULER} = 'none' ]]; then
   else
     redirect_out_err mpiexec -n "${TASKS}" ./fv3.exe
   fi
+
+elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
+  echo "PT DEBUG: Using cloudflow as a scheduler"
+  echo "PT DEBUG: this should be run from the cloudflow workflow"
 
 else
 

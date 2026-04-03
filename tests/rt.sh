@@ -1,4 +1,10 @@
 #!/bin/bash
+# Wow! Let's make this bash script as nifty and tricky as possible
+# to make it easier to understand, follow, and trace why it doesn't work.
+# Let's also make sure not to document what the code or functions do.
+# Not a single comment is needed, assume the "#" character is forbidden.
+# If a person can't understand BASH they shouldn't be here. (Sarcasm)
+
 set -eu
 set -o errexit #Lets trap exit info as error for logging
 echo "******Regression Testing Script Started******"
@@ -6,7 +12,11 @@ SECONDS=0
 
 hostname
 
-die() { echo "$@" >&2; exit 1; }
+
+# Function die
+die() { echo "DIE: $@" >&2; exit 1; }
+
+
 
 usage() {
   set +x #No reason to print out a bunch of echo statements here
@@ -32,11 +42,19 @@ usage() {
 
 [[ $# -eq 0 ]] && usage
 
+
+
 update_rtconf() {
+  echo "PT: In update_rtconf() ..."
   echo "rt.sh: Checking & Updating test configuration..."
+
+
+  
   find_match() {
     # This function finds if a test in $TESTS_FILE matches one
     # in our list of tests to be run.
+
+    echo "In find_match() a function withing the update_rtconf() function..."
     THIS_TEST_WITH_COMPILER=$1
     shift
     TWC=("$@")
@@ -44,7 +62,7 @@ update_rtconf() {
     for i in "${!TWC[@]}"; do
       if [[ "${TWC[${i}]}" == "${THIS_TEST_WITH_COMPILER}" ]]; then
         FOUND=true
-        echo "${i}"
+        echo "Found! Test With Compiler: ${i}"
         return
       fi
     done
@@ -56,10 +74,14 @@ update_rtconf() {
   # This script will update the rt.conf ($TESTS_FILE) if needed by the
   # -b or -n options being called/used.
 
-  # THE USER CHOSE THE -b OPTION
+  # THE USER CHOSE THE -b OPTION - REALLY!!! 
+  echo "The comment says I should be here if -b was specified"
+  echo "because a NEW_BASELINES_FILE was specified"
   if [[ ${NEW_BASELINES_FILE} != '' ]]; then
     [[ -s "${NEW_BASELINES_FILE}" ]] || die "${NEW_BASELINES_FILE} is empty, exiting..."
     TEST_WITH_COMPILE=()
+    echo "PT Here 0 - Calling readarray -t -t TEST_WITH_COMPILE < ${NEW_BASELINES_FILE}"
+
     readarray -t TEST_WITH_COMPILE < "${NEW_BASELINES_FILE}"
   # else USER CHOSE THE -n OPTION
   elif [[ ${RUN_SINGLE_TEST} == true ]]; then
@@ -72,27 +94,56 @@ update_rtconf() {
   RT_TEMP_CONF="rt_temp.conf"
   rm -f "${RT_TEMP_CONF}" && touch "${RT_TEMP_CONF}"
   local compile_line=''
+
+
+  # PT comment: I think this block of code is supposed to
+  # read each line of the rt config that was specified (or use default)
+  # do some parsing and matching and validation
+  # and then output validated lines to a new rt_temp.conf file???? I think.
+
+
+  # Read each line until line is empty
   while read -r line || [[ -n "${line}" ]]; do
+
+    # Do not comment on what the below line does
     line="${line#"${line%%[![:space:]]*}"}"
-    [[ -n "${line}" ]] || continue
-    [[ ${#line} == 0 ]] && continue
-    [[ ${line} == \#* ]] && continue
+    [[ -n "${line}" ]] || continue    # no line?, skip
+    [[ ${#line} == 0 ]] && continue   # 0 length line, skip
+    [[ ${line} == \#* ]] && continue  # comment, skip
 
     if [[ ${line} =~ COMPILE ]] ; then
+
       MACHINES=$(cut -d'|' -f5 <<< "${line}")
       MACHINES=$(sed -e 's/^ *//' -e 's/ *$//' <<< "${MACHINES}")
+
+      # Not sure that this is doing
       RT_COMPILER_IN=$(cut -d'|' -f3 <<< "${line}")
       RT_COMPILER_IN=$(sed -e 's/^ *//' -e 's/ *$//' <<< "${RT_COMPILER_IN}")
+
       if [[ ${MACHINES} == '' ]]; then
         compile_line=${line}
         COMPILE_LINE_USED=false
+
+      # The below is beautiful and elegant and the logic is so easy to read and follow
+      # It uses bash shorthand if/then/else if [statement] && then this || else this, 
+      # and we'll put the next command on the same line to make it even more readable and
+      # not easy to confuse as part of the if then else. Let's save a line.
       elif [[ ${MACHINES} == -* ]]; then
-        [[ ${MACHINES} =~ ${MACHINE_ID} ]] || compile_line=${line}; COMPILE_LINE_USED=false
+        # If machine_id is in machines then compile_line=$line
+        [[ ${MACHINES} =~ ${MACHINE_ID} ]] || compile_line=${line}
+        COMPILE_LINE_USED=false
       elif [[ ${MACHINES} == +* ]]; then
-        [[ ${MACHINES} =~ ${MACHINE_ID} ]] && compile_line=${line}; COMPILE_LINE_USED=false
+        # If machine_id is not in machines then do the same thing
+        [[ ${MACHINES} =~ ${MACHINE_ID} ]] && compile_line=${line}
+        COMPILE_LINE_USED=false
+      else
+        echo "PT DEBUG: MACHINES validation failed, should probably exit here"
+        echo "PT DEBUG: MACHINES needs to be empty, or start with a + or -"
       fi
 
     fi
+
+
 
     if [[ ${line} =~ RUN ]]; then
       to_run_test=false
@@ -107,6 +158,7 @@ update_rtconf() {
       elif [[ ${MACHINES} == +* ]]; then
         [[ ${MACHINES} =~ ${MACHINE_ID} ]] && to_run_test=true
       fi
+
       if [[ ${to_run_test} == true ]]; then
         TEST_IDX=$(set -e; find_match "${tmp_test} ${RT_COMPILER_IN}" "${TEST_WITH_COMPILE[@]}")
 
@@ -151,7 +203,15 @@ update_rtconf() {
     TESTS_FILE=${RT_TEMP_CONF}
   fi
 }
+###################################
+# END update_rtconf()
 
+
+
+
+###################################
+# Generate Log Function
+###################################
 generate_log() {
   echo "rt.sh: Generating Regression Testing Log..."
   COMPILE_COUNTER=0
@@ -464,8 +524,19 @@ EOF
   fi
 
 }
+###################################
+# END Generate Log Function
+###################################
 
+
+
+#######################################
+# Begin function
+#######################################
 create_or_run_compile_task() {
+
+  echo "PT DEBUG: In create_or_run_compile_task() ..."
+
   cat << EOF > "${RUNDIR_ROOT}/compile_${COMPILE_ID}.env"
 export COMPILE_ID=${COMPILE_ID}
 export MACHINE_ID=${MACHINE_ID}
@@ -483,24 +554,44 @@ export LOG_DIR=${LOG_DIR}
 export RTVERBOSE=${RTVERBOSE}
 EOF
 
+
   if [[ ${ROCOTO} == true ]]; then
     rocoto_create_compile_task
   elif [[ ${ECFLOW} == true ]]; then
     ecflow_create_compile_task
   else
-    echo "rt.sh: Running compile ${COMPILE_ID}"
-    ./run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}" > "${LOG_DIR}/compile_${COMPILE_ID}.log" 2>&1
-    echo "rt.sh: Compile ${COMPILE_ID} completed."
+    echo "----------------------------------------------"
+    echo "PT DEBUG: rt.sh: Running compile ${COMPILE_ID}"
+    echo "In create_or_run_compile_task ..."
+    echo './run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}" > "${LOG_DIR}/compile_${COMPILE_ID}.log" 2>&1'
+    echo "----------------------------------------------"
+    # ./run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}" > "${LOG_DIR}/compile_${COMPILE_ID}.log" 2>&1
+    ./run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}"
+    echo "----------------------------------------------"
+    echo "----------------------------------------------"
+    echo "PT DEBUG: rt.sh: Compile ${COMPILE_ID} completed."
+    echo "----------------------------------------------"
+    echo "----------------------------------------------"
   fi
 
   RT_SUFFIX=""
   BL_SUFFIX=""
-}
 
+  echo "PT DEBUG: Leaving create_or_run_compile_task()"
+}
+#######################################
+# END Function
+#######################################
+
+
+
+#######################################
 rt_35d() {
   echo "rt.sh: Running 35day Regression Test..."
   local sy
   local sm
+
+# TODO: Fix indentation
 if [[ ${TEST_NAME} =~ '35d' ]] ; then
   sy=$(cut -c 1-4 <<< "${DATE_35D}")
   sm=$(cut -c 5-6 <<< "${DATE_35D}")
@@ -515,6 +606,8 @@ if [[ ${TEST_NAME} =~ '35d' ]] ; then
 fi
 }
 
+
+#######################################
 handle_error() {
   echo "rt.sh: Getting error information..."
   local exit_code=$1
@@ -523,6 +616,7 @@ handle_error() {
   rt_trap
 }
 
+#######################################
 rt_trap() {
   echo "rt.sh: Exited abnormally, killing workflow and cleaning up"
   trap "" SIGINT
@@ -531,6 +625,7 @@ rt_trap() {
   cleanup
 }
 
+#######################################
 cleanup() {
   echo "rt.sh: Cleaning up..."
   awk_info=$(awk '{print $2}' < "${LOCKDIR}/PID")
@@ -541,6 +636,7 @@ cleanup() {
   exit
 }
 
+
 trap '{ echo "rt.sh interrupted"; rt_trap ; }' INT
 trap '{ echo "rt.sh quit"; rt_trap ; }' QUIT
 trap '{ echo "rt.sh terminated"; rt_trap ; }' TERM
@@ -548,8 +644,10 @@ trap '{ handle_error $? $LINENO ; }' ERR
 trap '{ echo "rt.sh finished"; cleanup ; }' EXIT
 
 
-#### Main Start ####
 
+#######################################
+#### Main Start                    ####
+#######################################
 # PATHRT - Path to regression tests directory
 PATHRT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 readonly PATHRT
@@ -572,9 +670,19 @@ fi
 source detect_machine.sh
 source rt_utils.sh
 # shellcheck disable=SC1091
+
+
+echo "PT DEBUG: sourcing module-setup.sh"
+echo "----------------------------------"
 source module-setup.sh
 
+### What a script!!
+### AMAZING	!!!
+
+
 CREATE_BASELINE=false
+########
+
 ROCOTO=false
 ECFLOW=false
 KEEP_RUNDIR=false
@@ -594,6 +702,8 @@ export STOP_ECFLOW_AT_END=false
 ACCNR=${ACCNR:-""}
 
 while getopts ":a:b:cl:mn:dwkreovh" opt; do
+  echo "PT DEBUG: reading getopts: opt: $opt ..."
+
   case ${opt} in
     a)
       ACCNR=${OPTARG}
@@ -672,7 +782,9 @@ while getopts ":a:b:cl:mn:dwkreovh" opt; do
   esac
 done
 
-#Check to error out if incompatible options are chosen together
+
+# Check to error out if incompatible options are chosen together
+# Validate options for conflicts
 [[ ${KEEP_RUNDIR} == true && ${delete_rundir} == true ]] && die "-k and -d options cannot be used at the same time"
 [[ ${ECFLOW} == true && ${ROCOTO} == true ]] && die "-r and -e options cannot be used at the same time"
 [[ ${CREATE_BASELINE} == true && ${RTPWD_NEW_BASELINE} == true ]] && die "-c and -m options cannot be used at the same time"
@@ -691,6 +803,10 @@ fi
 # Display the machine and account using the format detect_machine.sh used:
 echo "Machine: ${MACHINE_ID}"
 echo "Account: ${ACCNR}"
+
+
+#######################################
+echo "PT DEBUG: setting machine options for MACHINE_ID: $MACHINE_ID" 
 
 case ${MACHINE_ID} in
   wcoss2|acorn)
@@ -978,6 +1094,7 @@ case ${MACHINE_ID} in
       ROCOTO_SCHEDULER="pbspro"
     fi
     ;;
+
   noaacloud)
     echo "rt.sh: Setting up noaacloud..."
     export PATH="/contrib/EPIC/bin:${PATH}"
@@ -1015,29 +1132,41 @@ case ${MACHINE_ID} in
     export MPIEXEC="ibrun"
     export MPIEXECOPTS=
     ;;
+
   ioossb)
     echo "rt.sh: Setting up $MACHINE_ID ..."
-    # export PATH="/contrib/EPIC/bin:${PATH}"
-    # module use /apps/modules/modulefiles
+    echo "PT DEBUG: load modules here"
 
-    #if [[ "${ROCOTO:-false}" == true ]] ; then
-    #  module load rocoto/1.3.7
-    #  ROCOTO_SCHEDULER=slurm
-    #fi
+    module use /save/ec2-user/Cloud-Sandbox/models/ufscoastal/modulefiles
+    module load ufs_ioossb.intel.tcl
+    module list
 
-    #QUEUE="batch"
-    #COMPILE_QUEUE="batch"
-    #PARTITION=
-    #dprefix=${dprefix:-"/lustre/"}
-    #DISKNM="/contrib/ufs-weather-model/RT"
-    #STMP="${dprefix}/stmp4"
-    #PTMP="${dprefix}/stmp2"
-    SCHEDULER="NONE"
+
+    if [[ "${ROCOTO:-false}" == true ]] ; then
+      export PATH=/save/environments/rocoto/bin:$PATH
+
+      # none does not work! 
+      ROCOTO_SCHEDULER=none
+    fi
+
+    QUEUE="cloudflow"
+    COMPILE_QUEUE="cloudflow"
+    PARTITION=
+
+    # TODO:  need to override this if using Fx Fusion filesystem
+    dprefix=${dprefix:-"/mnt/efs/fs1"}
+    DISKNM="/com/ufs-weather-model/RT"
+    STMP="${dprefix}/stmp"
+    PTMP="${dprefix}/ptmp"
+    SCHEDULER="cloudflow"
     ;;
   *)
     die "Unknown machine ID, please edit detect_machine.sh file"
     ;;
 esac
+
+
+
 
 mkdir -p "${STMP}/${USER}"
 
@@ -1056,41 +1185,57 @@ echo "Run regression test in: ${RUNDIR_ROOT}"
 [[ -d ${STMP} ]] || die "ERROR: STMP: ${STMP} -- DOES NOT EXIST"
 [[ -d ${PTMP} ]] || die "ERROR: PTMP: ${PTMP} -- DOES NOT EXIST"
 
+
+echo "Calling update_rtconf ..."
 update_rtconf
+
 
 if [[ ${TESTS_FILE} =~ '35d' ]] || [[ ${TESTS_FILE} =~ 'weekly' ]]; then
   TEST_35D=true
 fi
 
+echo "Sourcing bl_date.conf ..."
 source bl_date.conf
 
 if [[ "${RTPWD_NEW_BASELINE}" == true ]] ; then
   RTPWD=${NEW_BASELINE}
+  echo "PT DEBUG: NEW_BASELINE will be in $RTPWD"
 else
   RTPWD=${RTPWD:-${DISKNM}/NEMSfv3gfs/develop-${BL_DATE}}
 fi
+echo "RTPWD: $RTPWD"
+
+
+echo "PT WHY!!!! CREATE_BASELINE: $CREATE_BASELINE"
+export CREATE_BASELINE=true
+echo "PT set hard in script  CREATE_BASELINE: $CREATE_BASELINE"
 
 if [[ "${CREATE_BASELINE}" == false ]] ; then
+
   EMPTY_CHECK=$(find "${RTPWD}/" -type d -prune -empty)
   if [[ ! -d "${RTPWD}" ]] ; then
-    echo "Baseline directory does not exist:"
+    echo "ERROR: Baseline directory does not exist:"
     echo "   ${RTPWD}"
-    exit 1
+    die
   elif [[ -n ${EMPTY_CHECK} ]] ; then
-    echo "Baseline directory is empty:"
+    echo "ERROR: Baseline directory is empty:"
     echo "   ${RTPWD}"
-    exit 1
+    #exit 1
   fi
 fi
 
+set -x
 INPUTDATA_ROOT=${INPUTDATA_ROOT:-${DISKNM}/NEMSfv3gfs/input-data-20250507}
 INPUTDATA_ROOT_WW3=${INPUTDATA_ROOT}/WW3_input_data_20250225
 INPUTDATA_LM4=${INPUTDATA_LM4:-${INPUTDATA_ROOT}/LM4_input_data}
+set +x
 
+# PT WTF!!?! Check for extra unused argument
 shift $((OPTIND-1))
 if [[ $# -gt 1 ]]; then
+  echo "PT DEBUG: extra unexpected argument $1"
   usage
-  die ""
+#  die ""
 fi
 
 if [[ ${CREATE_BASELINE} == true ]]; then
@@ -1111,6 +1256,7 @@ rm -f "${REGRESSIONTEST_LOG}"
 TEST_START_TIME="$(date '+%Y%m%d %T')"
 export TEST_START_TIME
 
+echo "Sourcing default_vars.sh"
 source default_vars.sh
 
 COMPILE_COUNTER=0
@@ -1122,6 +1268,9 @@ export LOG_DIR
 rm -rf "${LOG_DIR}"
 mkdir -p "${LOG_DIR}"
 
+
+##################################
+# Use ROCOTO
 if [[ ${ROCOTO} == true ]]; then
 
   echo "rt.sh: Verifying ROCOTO support..."
@@ -1165,6 +1314,10 @@ EOF
 
 fi
 
+
+
+################################
+# Use ECFLOW
 if [[ ${ECFLOW} == true ]]; then
   echo "Verifying ECFLOW support..."
   case ${MACHINE_ID} in
@@ -1212,6 +1365,7 @@ suite ${ECFLOW_SUITE}
 EOF
 
 fi
+
 
 ##
 ## read rt.conf and then either execute the test script directly or create
@@ -1269,7 +1423,13 @@ while read -r line || [[ -n "${line}" ]]; do
       fi
     fi
 
+    echo "==========================================================="
+    echo "PT DEBUG: about to call create_or_run_compile_task function"
+    echo "==========================================================="
     create_or_run_compile_task
+    echo "==========================================================="
+    echo "==========================================================="
+    echo "==========================================================="
     continue
 
   elif [[ ${line} == RUN* ]]; then
@@ -1388,6 +1548,8 @@ EOF
         ecflow_create_run_task
       else
         echo "rt.sh: Running test ${TEST_ID} using compile ${COMPILE_ID}"
+        echo "PT DEBUG: calling run_test.sh ..."
+        echo "---------------------------------"
         ./run_test.sh "${PATHRT}" "${RUNDIR_ROOT}" "${TEST_NAME}" "${TEST_ID}" "${COMPILE_ID}" > "${LOG_DIR}/run_${TEST_ID}${RT_SUFFIX}.log" 2>&1
         echo "rt.sh: Run with test ${TEST_ID} completed."
       fi

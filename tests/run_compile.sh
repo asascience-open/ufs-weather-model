@@ -2,6 +2,12 @@
 set -eux
 set -o pipefail
 
+echo "================================"
+echo "================================"
+echo "PT DEBUG: In run_compile.sh ..."
+echo "================================"
+echo "================================"
+
 echo "PID=$$"
 SECONDS=0
 
@@ -29,6 +35,7 @@ write_fail_test() {
   fi
 }
 
+
 remove_fail_test() {
     echo "Removing test failure flag file for ${JBNME}"
     rm -f "${PATHRT}/fail_${JBNME}"
@@ -49,9 +56,21 @@ export JBNME="compile_${COMPILE_ID}"
 cd "${PATHRT}"
 remove_fail_test
 
-[[ -e ${RUNDIR_ROOT}/${JBNME}.env ]] && source "${RUNDIR_ROOT}/${JBNME}.env"
+echo "PT DEBUG: why does it source it twice here?"
+echo "PT DEBUG: what is in ${RUNDIR_ROOT}/${JBNME}.env"
+if [[ -e ${RUNDIR_ROOT}/${JBNME}.env ]]; then
+  source "${RUNDIR_ROOT}/${JBNME}.env"
+  cat "${RUNDIR_ROOT}/${JBNME}.env"
+fi
+
+echo "PT DEBUG: sourcing default_vars.sh" 
 source default_vars.sh
-[[ -e ${RUNDIR_ROOT}/${JBNME}.env ]] && source "${RUNDIR_ROOT}/${JBNME}.env"
+
+echo "PT DEBUG: what is in ${RUNDIR_ROOT}/${JBNME}.env"
+if [[ -e ${RUNDIR_ROOT}/${JBNME}.env ]]; then
+  source "${RUNDIR_ROOT}/${JBNME}.env"
+  cat "${RUNDIR_ROOT}/${JBNME}.env"
+fi
 
 
 export RUNDIR=${RUNDIR_ROOT}/${JBNME}
@@ -61,6 +80,7 @@ echo -n "${JBNME}, ${date_s}," > "${LOG_DIR}/${JBNME}_timestamp.txt"
 export RT_LOG=${LOG_DIR}/${JBNME}.log
 
 source rt_utils.sh
+
 source atparse.bash
 
 rm -rf "${RUNDIR}"
@@ -81,6 +101,15 @@ elif [[ ${SCHEDULER} = 'slurm' ]]; then
     echo "Looking for fv3_conf/compile_slurm.IN_${MACHINE_ID} but it is not found. Exiting"
     exit 1
   fi
+elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
+  echo "PT DEBUG: SCHEDULER = cloudflow"
+  if [[ -e ${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID} ]]; then
+    echo "PT DEBUG: calling atparse < ${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID}> job_card"
+    atparse < "${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID}" > job_card
+  else
+    echo "Looking for fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID} but it is not found. Exiting"
+    exit 1
+  fi
 fi
 
 ################################################################################
@@ -98,6 +127,7 @@ fi
 cp "${RUNDIR}/${JBNME}_time.log" "${LOG_DIR}"
 cat "${RUNDIR}/job_timestamp.txt" >> "${LOG_DIR}/${JBNME}_timestamp.txt"
 
+echo "PT DEBUG: calling remove_fail_test()"
 remove_fail_test
 
 ################################################################################
