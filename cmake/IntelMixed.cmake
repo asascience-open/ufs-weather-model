@@ -1,3 +1,5 @@
+message("IntelMixed.cmake - setting cmake options for ${CMAKE_Platform}")
+
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -g -traceback -fpp -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -align array64byte -qno-opt-dynamic-align")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -qno-opt-dynamic-align -fp-model precise")
 
@@ -24,7 +26,9 @@ if(DEBUG)
     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -O0 -check -check noarg_temp_created -warn -warn noerrors -fp-stack-check -fstack-protector-all -fpe0 -debug -ftrapuv -init=snan,arrays")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -ftrapuv")
 else()
+
     if(FASTER)
+      message("IntelMixed.cmake -DFASTER was specified ${FASTER}")
       set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fp-model precise -assume buffered_stdout -fno-alias -align all -debug minimal -qoverride-limits -ftz -no-ip")
       set(CMAKE_C_FLAGS_RELEASE       "-O3 -fp-model precise -debug minimal -qoverride-limits -ftz")
     else()
@@ -33,7 +37,11 @@ else()
       set(CMAKE_C_FLAGS_RELEASE       "-O2 -debug minimal")
       set(FAST "-fast-transcendentals")
     endif()
-    if(AVX2)
+
+    if(X86_64V3)
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -march=core-avx2")
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=x86-64-v3")
+    elseif(AVX2)
         set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -march=core-avx2")
         set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=core-avx2")
     elseif(SIMDMULTIARCH)

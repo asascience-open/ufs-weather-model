@@ -1,5 +1,6 @@
 #!/bin/bash
-set -eux
+#set -eux
+set -eu
 set -o pipefail
 
 echo "================================"
@@ -117,6 +118,8 @@ fi
 ################################################################################
 
 if [[ ${ROCOTO} = 'false' ]]; then
+  echo "PT DEBUG: calling submit_and_wait job_card"
+  cat job_card
   submit_and_wait job_card
 else
   chmod u+x job_card

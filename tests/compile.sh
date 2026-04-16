@@ -30,12 +30,14 @@ if [[ ${ARGC} -lt 2 ]]; then
   echostuff=$( fold -sw72 <<< "${echostuff}" )
   exit 1
 else
+  echo "PT DEBUG: compile.sh ARGS"
   MACHINE_ID=$1
   MAKE_OPT=${2:-}
   COMPILE_ID=${3:+$3}
   RT_COMPILER=${4:-intel}
   clean_before=${5:-YES}
   clean_after=${6:-YES}
+
 fi
 
 BUILD_NAME=fv3_${COMPILE_ID}
@@ -76,7 +78,13 @@ case ${MACHINE_ID} in
 
       # newer gcc is needed for libm 
       source /opt/rh/gcc-toolset-13/enable
+     
       BUILD_JOBS=2
+      if [ $(nproc) -eq 1 ]; then
+        BUILD_JOBS=1
+      else
+        BUILD_JOBS=$(($(nproc)/2))
+      fi
     fi
 
     # Load fv3 module
@@ -129,6 +137,9 @@ bash -x "${PATHTR}/build.sh"
 
 rsync --remove-source-files "${BUILD_DIR}/ufs_model" "${PATHTR}/tests/${BUILD_NAME}.exe"
 if [[ ${MACHINE_ID} == linux ]]; then
+  cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}" "${PATHTR}/tests/modules.${BUILD_NAME}"
+elif [[ ${MACHINE_ID} == ioossb ]]; then
+  echo "PT: TODO - initially had some spack-stack issues with lua modulefiles"
   cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}" "${PATHTR}/tests/modules.${BUILD_NAME}"
 else
   cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}.lua" "${PATHTR}/tests/modules.${BUILD_NAME}.lua"

@@ -1,22 +1,33 @@
 #!/bin/sh
 
-# None od this SBATCH is needed for cloudflow
-# #SBATCH -e err
-# #SBATCH -o out
-# #SBATCH --account=@[ACCNR]
-# #SBATCH --qos=@[QUEUE]
-# #SBATCH --partition=@[PARTITION]
-# #SBATCH --nodes=1
-# #SBATCH --ntasks-per-node=8
-# #SBATCH --time=60
-# #SBATCH --job-name="@[JBNME]"
+# None of this SBATCH is needed for cloudflow
+# atparse will process this template
+# But we still need to propagate the variables to it
 
 set -eux
+
+# atparse will replace this with the hostnames of the current local cluster 
+HOSTS=@[HOSTS]
+
+# if hosts is empty, we are running locally
+FIRST_HOST=${HOSTS%%,*}
+FIRST_HOST=${FIRST_HOST// /}
 
 echo -n " $( date +%s )," >  job_timestamp.txt
 echo "Compile started:  " `date`
 
-@[PATHRT]/compile.sh @[MACHINE_ID] "@[MAKE_OPT]" @[COMPILE_ID] @[RT_COMPILER] YES NO
+# For cloudflow, need to ssh into machine and run compile on first node in hosts
+ssh -o BatchMode=yes $FIRST_HOST @[PATHRT]/compile.sh @[MACHINE_ID] \"@[MAKE_OPT]\" @[COMPILE_ID] @[RT_COMPILER] YES NO
+rc=$?
 
+if [[ $rc -eq 0 ]]; then
+    echo 'Compile completed successfully'
+else
+    echo "Compile failed with rc=$rc"
+fi
 echo "Compile ended:    " `date`
 echo -n " $( date +%s )," >> job_timestamp.txt
+
+# Propagate exit status
+exit $rc
+

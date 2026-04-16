@@ -21,7 +21,7 @@ die() { echo "DIE: $@" >&2; exit 1; }
 usage() {
   set +x #No reason to print out a bunch of echo statements here
   echo
-  echo "Usage: $0 -a <account> | -b <file> | -c | -d | -e | -h | -k | -l <file> | -m | -n <name> | -o | -r | -v | -w"
+  echo "Usage: $0 -a <account> | -b <file> | -c | -d | -e | -h | -k | -l <file> | -m | -n <name> | -o | -r | -v | -w | -x"
   echo
   echo "  -a  <account> to use on for HPC queue"
   echo "  -b  create new baselines only for tests listed in <file>"
@@ -37,11 +37,11 @@ usage() {
   echo "  -r  use Rocoto workflow manager"
   echo "  -v  verbose output"
   echo "  -w  for weekly_test, skip comparing baseline results"
+  echo "  -x  skip compile"
   echo
 }
 
 [[ $# -eq 0 ]] && usage
-
 
 
 update_rtconf() {
@@ -74,15 +74,14 @@ update_rtconf() {
   # This script will update the rt.conf ($TESTS_FILE) if needed by the
   # -b or -n options being called/used.
 
-  # THE USER CHOSE THE -b OPTION - REALLY!!! 
-  echo "The comment says I should be here if -b was specified"
-  echo "because a NEW_BASELINES_FILE was specified"
+  # THE USER CHOSE THE -b OPTION 
   if [[ ${NEW_BASELINES_FILE} != '' ]]; then
     [[ -s "${NEW_BASELINES_FILE}" ]] || die "${NEW_BASELINES_FILE} is empty, exiting..."
     TEST_WITH_COMPILE=()
-    echo "PT Here 0 - Calling readarray -t -t TEST_WITH_COMPILE < ${NEW_BASELINES_FILE}"
+    echo "PT Here 0 - Calling readarray -t TEST_WITH_COMPILE < ${NEW_BASELINES_FILE}"
 
     readarray -t TEST_WITH_COMPILE < "${NEW_BASELINES_FILE}"
+
   # else USER CHOSE THE -n OPTION
   elif [[ ${RUN_SINGLE_TEST} == true ]]; then
     TEST_WITH_COMPILE=("${SRT_NAME} ${SRT_COMPILER}")
@@ -140,9 +139,7 @@ update_rtconf() {
         echo "PT DEBUG: MACHINES validation failed, should probably exit here"
         echo "PT DEBUG: MACHINES needs to be empty, or start with a + or -"
       fi
-
     fi
-
 
 
     if [[ ${line} =~ RUN ]]; then
@@ -166,7 +163,6 @@ update_rtconf() {
           if [[ ${COMPILE_LINE_USED} == false ]]; then
             echo -en '\n' >> "${RT_TEMP_CONF}"
             echo "${compile_line}" >> "${RT_TEMP_CONF}"
-
             COMPILE_LINE_USED=true
           fi
           dep_test=$(grep -w "${tmp_test}" <<< "${line}")
@@ -212,6 +208,7 @@ update_rtconf() {
 ###################################
 # Generate Log Function
 ###################################
+## WOW! ##
 generate_log() {
   echo "rt.sh: Generating Regression Testing Log..."
   COMPILE_COUNTER=0
@@ -233,6 +230,7 @@ ${GIT_HASHES}
 
 Submodule hashes used in testing:
 EOF
+
   cd ..
   if  [[ ${MACHINE_ID} != hera  ]]; then
     git submodule status --recursive >> "${REGRESSIONTEST_LOG}"
@@ -269,7 +267,7 @@ EOF
   [[ ${ROCOTO} == true ]] && echo "* (-r) - USE ROCOTO" >> "${REGRESSIONTEST_LOG}"
   [[ ${ECFLOW} == true ]] && echo "* (-e) - USE ECFLOW" >> "${REGRESSIONTEST_LOG}"
   [[ ${RTVERBOSE} == true ]] && echo "* (-v) - VERBOSE OUTPUT" >> "${REGRESSIONTEST_LOG}"
-
+  #TODO add skipcompile option log
 
   [[ -f "${TEST_CHANGES_LOG}" ]] && rm "${TEST_CHANGES_LOG}"
   touch "${TEST_CHANGES_LOG}"
@@ -566,6 +564,8 @@ EOF
     echo './run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}" > "${LOG_DIR}/compile_${COMPILE_ID}.log" 2>&1'
     echo "----------------------------------------------"
     # ./run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}" > "${LOG_DIR}/compile_${COMPILE_ID}.log" 2>&1
+
+    echo "PT DEBUG: Maybe easier to skip compile here"
     ./run_compile.sh "${PATHRT}" "${RUNDIR_ROOT}" "${MAKE_OPT}" "${COMPILE_ID}"
     echo "----------------------------------------------"
     echo "----------------------------------------------"
@@ -700,8 +700,9 @@ RTVERBOSE=false
 export RTVERBOSE
 export STOP_ECFLOW_AT_END=false
 ACCNR=${ACCNR:-""}
+SKIPCOMPILE=false
 
-while getopts ":a:b:cl:mn:dwkreovh" opt; do
+while getopts ":a:b:cl:mn:dwkreovhx" opt; do
   echo "PT DEBUG: reading getopts: opt: $opt ..."
 
   case ${opt} in
@@ -766,6 +767,9 @@ while getopts ":a:b:cl:mn:dwkreovh" opt; do
     h)
       usage
       die ""
+      ;;
+    x)
+      SKIPCOMPILE=true
       ;;
     \?)
       usage
@@ -1133,18 +1137,20 @@ case ${MACHINE_ID} in
     export MPIEXECOPTS=
     ;;
 
+
+
   ioossb)
     echo "rt.sh: Setting up $MACHINE_ID ..."
-    echo "PT DEBUG: load modules here"
+    echo "loading modules ..."
 
     module use /save/ec2-user/Cloud-Sandbox/models/ufscoastal/modulefiles
-    module load ufs_ioossb.intel.tcl
-    module list
+echo "PT DEBUG: don't need to load modules here"
+#    module load ufs_ioossb.intel
+#    module list
 
-
+    # rocoto doesn't work without a scheduler e.g. slurm, pbs, lsf
     if [[ "${ROCOTO:-false}" == true ]] ; then
       export PATH=/save/environments/rocoto/bin:$PATH
-
       # none does not work! 
       ROCOTO_SCHEDULER=none
     fi
@@ -1152,19 +1158,19 @@ case ${MACHINE_ID} in
     QUEUE="cloudflow"
     COMPILE_QUEUE="cloudflow"
     PARTITION=
+    export HOSTS=${HOSTS:-localhost}
 
-    # TODO:  need to override this if using Fx Fusion filesystem
+    # override this if using Fx Fusion filesystem
     dprefix=${dprefix:-"/mnt/efs/fs1"}
-    DISKNM="/com/ufs-weather-model/RT"
-    STMP="${dprefix}/stmp"
-    PTMP="${dprefix}/ptmp"
+    DISKNM=${DISKNM:-"/com/ufs-weather-model/RT"}
+    STMP=${STMP:="${dprefix}/ptmp"}
+    PTMP=${PTMP:-"${dprefix}/ptmp"}
     SCHEDULER="cloudflow"
     ;;
   *)
     die "Unknown machine ID, please edit detect_machine.sh file"
     ;;
 esac
-
 
 
 
@@ -1205,10 +1211,7 @@ else
 fi
 echo "RTPWD: $RTPWD"
 
-
-echo "PT WHY!!!! CREATE_BASELINE: $CREATE_BASELINE"
-export CREATE_BASELINE=true
-echo "PT set hard in script  CREATE_BASELINE: $CREATE_BASELINE"
+echo "PT DEBUG: CREATE_BASELINE: $CREATE_BASELINE"
 
 if [[ "${CREATE_BASELINE}" == false ]] ; then
 
@@ -1230,12 +1233,10 @@ INPUTDATA_ROOT_WW3=${INPUTDATA_ROOT}/WW3_input_data_20250225
 INPUTDATA_LM4=${INPUTDATA_LM4:-${INPUTDATA_ROOT}/LM4_input_data}
 set +x
 
-# PT WTF!!?! Check for extra unused argument
 shift $((OPTIND-1))
 if [[ $# -gt 1 ]]; then
-  echo "PT DEBUG: extra unexpected argument $1"
   usage
-#  die ""
+  die ""
 fi
 
 if [[ ${CREATE_BASELINE} == true ]]; then
@@ -1390,8 +1391,10 @@ while read -r line || [[ -n "${line}" ]]; do
     COMPILE_NAME=$(cut -d '|' -f2 <<< "${line}")
     COMPILE_NAME=$(sed -e 's/^ *//' -e 's/ *$//' <<< "${COMPILE_NAME}")
 
+    echo "PT DEBUG: $line"
     RT_COMPILER=$(cut -d '|' -f3  <<< "${line}")
     RT_COMPILER=$(sed -e 's/^ *//' -e 's/ *$//' <<< "${RT_COMPILER}")
+    echo "PT DEBUG: $RT_COMPILER"
 
     MAKE_OPT=$(cut -d '|' -f4  <<< "${line}")
     MAKE_OPT=$(sed -e 's/^ *//' -e 's/ *$//' <<< "${MAKE_OPT}")
@@ -1401,6 +1404,7 @@ while read -r line || [[ -n "${line}" ]]; do
 
     CB=$(cut -d '|' -f6  <<< "${line}")
     COMPILE_ID=${COMPILE_NAME}_${RT_COMPILER}
+    echo "PT DEBUG: COMPILE_ID: $COMPILE_ID"
 
     set +u
     if [[ -n ${compiles[${COMPILE_ID}]} ]] ; then
@@ -1423,8 +1427,18 @@ while read -r line || [[ -n "${line}" ]]; do
       fi
     fi
 
+    if [[ ${SKIPCOMPILE} == true ]]; then
+
+      echo "SKIPCOMPILE == true, skipping build"
+      # Make sure the needed compiled .exe is present
+      if [[ ! -f ${PATHRT}/fv3_${COMPILE_ID}.exe ]]; then
+         echo "Could not find ${PATHRT}/fv3_${COMPILE_ID}.exe"
+         die "Could not find ${PATHRT}/fv3_${COMPILE_ID}.exe"
+      fi
+      continue
+    fi
     echo "==========================================================="
-    echo "PT DEBUG: about to call create_or_run_compile_task function"
+    echo "PT DEBUG: Calling create_or_run_compile_task for COMPILE   "
     echo "==========================================================="
     create_or_run_compile_task
     echo "==========================================================="
@@ -1433,6 +1447,8 @@ while read -r line || [[ -n "${line}" ]]; do
     continue
 
   elif [[ ${line} == RUN* ]]; then
+
+    echo "PT DEBUG: In line == RUN"
 
     [[ ${COMPILE_ONLY} == true ]] && continue
 
@@ -1487,15 +1503,20 @@ while read -r line || [[ -n "${line}" ]]; do
 EOF
     fi
 
+    # Run ( ) in a subshell, isolate from parent
     (
+
+      echo "PT DEBUG IN rt.sh RUN: sourcing ${PATHRT}/tests/${TEST_NAME}"
       source "${PATHRT}/tests/${TEST_NAME}"
 
+      echo "PT DEBUG: ESMF_THREADING: ${ESMF_THREADING}"
       if [[ ${ESMF_THREADING} == true ]]; then
         compute_petbounds_and_tasks_esmf_threading
       else
         compute_petbounds_and_tasks_traditional_threading
       fi
 
+      set -x
       TPN=$(( TPN / THRD ))
       NODES=$(( TASKS / TPN ))
       if (( NODES * TPN < TASKS )); then
@@ -1550,10 +1571,15 @@ EOF
         echo "rt.sh: Running test ${TEST_ID} using compile ${COMPILE_ID}"
         echo "PT DEBUG: calling run_test.sh ..."
         echo "---------------------------------"
-        ./run_test.sh "${PATHRT}" "${RUNDIR_ROOT}" "${TEST_NAME}" "${TEST_ID}" "${COMPILE_ID}" > "${LOG_DIR}/run_${TEST_ID}${RT_SUFFIX}.log" 2>&1
+        echo "PT DEBUG: not redirecting output to separate run log"
+        ./run_test.sh "${PATHRT}" "${RUNDIR_ROOT}" "${TEST_NAME}" "${TEST_ID}" "${COMPILE_ID}" 
+
+        #./run_test.sh "${PATHRT}" "${RUNDIR_ROOT}" "${TEST_NAME}" "${TEST_ID}" "${COMPILE_ID}" > "${LOG_DIR}/run_${TEST_ID}${RT_SUFFIX}.log" 2>&1
         echo "rt.sh: Run with test ${TEST_ID} completed."
       fi
     )
+    # END of insolation
+  
     continue
   else
     die "Unknown command ${line}"

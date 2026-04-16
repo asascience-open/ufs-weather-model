@@ -8,7 +8,7 @@
 #
 # Thank you for your contribution
 
-# If the MACHINE_ID variable is set, skip this script.
+# If MACHINE_ID is already set, skip this script.
 echo $MACHINE_ID
 [[ -n ${MACHINE_ID:-} ]] && return
 

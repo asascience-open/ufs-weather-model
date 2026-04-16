@@ -32,9 +32,6 @@ if [ $(nproc) -eq 1 ]; then
 else
   BUILD_JOBS=$(($(nproc)/2))
 fi
-#echo $BUILD_JOBS
-#exit
 
-#make -j "${BUILD_JOBS:-4}" "VERBOSE=${BUILD_VERBOSE:-}"
-make -j 1 "VERBOSE=YES"
+make -j "${BUILD_JOBS:-4}" "VERBOSE=${BUILD_VERBOSE:-}"
 

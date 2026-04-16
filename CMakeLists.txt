@@ -70,7 +70,7 @@ message("PAHM ............. ${PAHM}")
 message("GEOGATE .......... ${GEOGATE}")
 
 ###############################################################################
-### Build Options
+### Build Options - Set Defaults
 ###############################################################################
 set(32BIT           OFF CACHE BOOL "Enable 32BIT (single precision arithmetic in dycore and fast physics)")
 set(CCPP_32BIT      OFF CACHE BOOL "Enable CCPP_32BIT (single precision arithmetic in slow physics)")

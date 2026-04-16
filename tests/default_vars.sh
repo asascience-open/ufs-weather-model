@@ -119,6 +119,11 @@ export ocn_omp_num_threads=1
 export wav_omp_num_threads=1
 export fbh_omp_num_threads=1
 
+# PT: parm/model_configure.IN, atparse
+# PT: atparse.bash: line 82: ZSTANDARD_LEVEL: unbound variable
+
+export ZSTANDARD_LEVEL=0
+
 export histaux_enabled=.false.
 export BMIC=.false.
 
@@ -436,32 +441,36 @@ elif [[ ${MACHINE_ID} = frontera ]]; then
 elif [[ ${MACHINE_ID} = ioossb ]]; then
 
   echo "In default_vars $MACHINE_ID, setting TPN ..."
+  echo "PT: need to template this for on-demand cluster usage"
+
+  # PT: TODO: make this a separate file and source it here.
+
   TPN=96
 
   # TODO: this does not fit with cloudflow, but we 
   # won't be using rt.sh, just using it now to start with
   # These will be set dynamically depending on the type and number of compute nodes used
 
-  export INPES_dflt=3
-  export JNPES_dflt=8
-
-  export INPES_thrd=3
-  export JNPES_thrd=4
-
-  export INPES_c384=8
-  export JNPES_c384=6
-  export THRD_c384=1
-
-  export INPES_c768=8
-  export JNPES_c768=16
-  export THRD_c768=1
-
-  export THRD_cpl_atmw_gdas=1
-  export INPES_cpl_atmw_gdas=6
-  export JNPES_cpl_atmw_gdas=8
-
-  export WPG_cpl_atmw_gdas=24
-  export WAV_tasks_atmw_gdas=248
+#  export INPES_dflt=3
+#  export JNPES_dflt=8
+#
+#  export INPES_thrd=3
+#  export JNPES_thrd=4
+#
+#  export INPES_c384=8
+#  export JNPES_c384=6
+#  export THRD_c384=1
+#
+#  export INPES_c768=8
+#  export JNPES_c768=16
+#  export THRD_c768=1
+#
+#  export THRD_cpl_atmw_gdas=1
+#  export INPES_cpl_atmw_gdas=6
+#  export JNPES_cpl_atmw_gdas=8
+#
+#  export WPG_cpl_atmw_gdas=24
+#  export WAV_tasks_atmw_gdas=248
 
 else
 
@@ -544,8 +553,15 @@ export DO_CA=.false.
 export CA_SGS=.false.
 }
 
+
+
+
+
 export_fv3 ()
 {
+
+echo "PT DEBUG: in export_fv3() default_vars.sh"
+
 #Set defaults if ATMRES and DT_ATMOS are not set
 export ATMRES=${ATMRES:-"C96"}
 export DT_ATMOS=${DT_ATMOS:-"1800"}
@@ -1122,7 +1138,10 @@ export LAND_IAU_UPD_STC=.true.
 export LAND_IAU_UPD_SLC=.true.
 export LAND_IAU_DP_STCSMC_ADJ=.true.
 export LAND_IAU_MIN_T_INC=0.0001
-}
+} # END FV3
+
+
+
 
 # Add section for tiled grid namelist
 export_tiled() {
@@ -1861,8 +1880,11 @@ export_hafs_regional ()
   export MESH_WAV=mesh.hafs.nc
 }
 
+
+
 export_coastal ()
 {
+  echo "PT DEBUG: in export_coastal() default_vars.sh"
   export FV3=false
   export S2S=false
   export HAFS=false
@@ -1891,6 +1913,8 @@ export_coastal ()
   export meshloc=element
   export coupling_config=none
 }
+
+
 
 export_hafs ()
 {
@@ -2055,6 +2079,9 @@ export DY_6=''
 export OUTPUT_FH='3 -1'
 }
 
+
+
+
 export_hrrr() {
 export_fv3_v16
 export NPZ=127
@@ -2115,6 +2142,8 @@ export DO_GSL_DRAG_TOFD=.true.
 export DO_UGWP_V1=.false.
 export DO_UGWP_V1_OROG_ONLY=.false.
 }
+
+
 
 export_hrrr_conus13km()
 {
@@ -2210,6 +2239,9 @@ export DIAG_TABLE_ADDITIONAL=diag_additional_rrfs_smoke
 export FRAC_ICE=.true.
 }
 
+
+
+
 export_rap_common()
 {
 export_fv3_v16
@@ -2246,6 +2278,8 @@ export DO_MYNNEDMF=.true.
 export DO_MYNNSFCLAY=.true.
 }
 
+
+
 export_rap()
 {
   export_rap_common
@@ -2268,6 +2302,8 @@ export_rap()
   export DO_UGWP_V1=.false.
   export DO_UGWP_V1_OROG_ONLY=.false.
 }
+
+
 
 export_rrfs_v1()
 {

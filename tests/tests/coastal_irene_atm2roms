@@ -4,6 +4,9 @@
 #
 ###############################################################################
 
+echo "PT DEBUG: In coastal_irene_atm2roms configuration"
+echo "PT DEBUG: tests/coastal_irene_atm2roms"
+
 export TEST_DESCR="Compare coastal_irene_atm2roms results with previous trunk version"
 
 export CNTL_DIR=coastal_irene_atm2roms
@@ -48,7 +51,7 @@ export JMO=190
 export WRITE_NSFLIP=.false.
 export OUTPUT_FH="12 -1"
 export IAU_OFFSET=0
-if [[ " hera orion hercules gaea jet frontera " =~ " ${MACHINE_ID} " ]] ; then
+if [[ " hera orion hercules gaea jet frontera ioossb" =~ " ${MACHINE_ID} " ]] ; then
   ZSTANDARD_LEVEL=5
 fi
 
@@ -77,6 +80,8 @@ export ATM_compute_tasks=12
 export OCN_tasks=12
 
 # configuration
+echo "PT DEBUG: These need to be dynamic for ioossb"
+
 export MODEL_CONFIGURE=model_configure.IN
 export UFS_CONFIGURE=ufs.configure.coastal_datm_ocn.IN
 export med_model=cmeps
