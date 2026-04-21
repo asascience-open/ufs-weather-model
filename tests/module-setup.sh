@@ -87,10 +87,9 @@ elif [[ ${MACHINE_ID} = noaacloud ]] ; then
     module purge
 
 elif  [[ ${MACHINE_ID} = ioossb ]] ; then
-    echo "PT DEBUG: In module_setup.sh"
-    echo "PT DEBUG: MODULEPATH: $MODULEPATH"
-
+    # We are on IOOS/NOS AWS coastal modeling cloud sandbox
     module purge
+
 else
     echo WARNING: UNKNOWN PLATFORM 1>&2
 fi

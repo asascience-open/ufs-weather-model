@@ -5,9 +5,12 @@ set -o pipefail
 echo "PID=$$"
 SECONDS=0
 
-trap '[ "$?" -eq 0 ] || write_fail_test' EXIT
+trap '[ "$?" -eq 0 ] || echo "DEBUG: Error: Command [$BASH_COMMAND] failed on line $LINENO with exit code $?"' EXIT
+# trap '[ "$?" -eq 0 ] || write_fail_test' EXIT
 trap 'echo "run_test.sh interrupted PID=$$"; cleanup' INT
 trap 'echo "run_test.sh terminated PID=$$";  cleanup' TERM
+trap 'echo "DEBUG: Failed at: $BASH_COMMAND" at $LINENO' ERR
+
 
 cleanup() {
   [[ ${ROCOTO} = 'false' ]] && interrupt_job
@@ -43,7 +46,7 @@ export TEST_ID=$4
 export COMPILE_ID=$5
 
 echo "------------------------"
-echo "PT DEBUG: In run_test.sh"
+echo " In run_test.sh"
 echo "------------------------"
 echo "PATHRT: ${PATHRT}"
 echo "RUNDIR_ROOT: ${RUNDIR_ROOT}"
@@ -57,15 +60,11 @@ cd "${PATHRT}"
 unset MODEL_CONFIGURE
 unset UFS_CONFIGURE
 
-echo "PT DEBUG: NEED TO SET CLUSTER SPECIFIC ITEMS IN ONE OF THESE .env files"
-echo "PT DEBUG: NEED TO SET CLUSTER SPECIFIC ITEMS IN ONE OF THESE .env files"
-
+echo "PT TODO: Might need to set cluster specific options here."
 [[ -e ${RUNDIR_ROOT}/run_test_${TEST_ID}.env ]] && source "${RUNDIR_ROOT}/run_test_${TEST_ID}.env"
 source default_vars.sh
 [[ -e ${RUNDIR_ROOT}/run_test_${TEST_ID}.env ]] && source "${RUNDIR_ROOT}/run_test_${TEST_ID}.env"
 source "tests/${TEST_NAME}"
-echo "PT DEBUG --------------------------------------------------------------"
-echo "PT DEBUG"
 
 rm -f "${PATHRT}/fail_test_${TEST_ID}"
 
@@ -105,8 +104,6 @@ mkdir -p modulefiles
 if [[ ${MACHINE_ID} == linux ]]; then
   cp "${PATHRT}/modules.fv3_${COMPILE_ID}" "./modulefiles/modules.fv3"
 elif [[ ${MACHINE_ID} == ioossb ]]; then
-  # PT: WTH!?!?!?
-  echo "PT DEBUG: modules"
   echo "PT TODO: test spack-stack lua modules again. Had circular depependency issues previously"
   cp "${PATHRT}/modules.fv3_${COMPILE_ID}" "./modulefiles/modules.fv3"
 else
@@ -114,9 +111,6 @@ else
   cp "${PATHRT}/modules.fv3_${COMPILE_ID}.lua" "./modulefiles/modules.fv3.lua"
 fi
 
-echo "PT DEBUG: modules"
-echo "PT WHAT IS IT DOING???"
-echo "PT does this assume every platform has to have these exact versions in their spack-stack?"
 ls -al ./modulefiles/.
 echo "cp ${PATHTR}/modulefiles/ufs_common.lua ./modulefiles/."
 cp "${PATHTR}/modulefiles/ufs_common.lua" "./modulefiles/."
@@ -166,8 +160,7 @@ case ${MACHINE_ID} in
     module load nccmp/1.9.0.1
     ;;
   ioossb)
-    echo "PT DEBUG: modules 3 ... ioossb"
-    echo "Load modules here?"
+    # Following default pattern here
     module use modulefiles
     module load modules.fv3
     ;;
@@ -181,7 +174,6 @@ esac
 if [[ -n "${FV3_RUN}" ]]; then
   for i in ${FV3_RUN}
   do
-    echo "PT DEBUG: in FV3_RUN i: {i}, calling atparse fv3_conf/${i}"
     atparse < "${PATHRT}/fv3_conf/${i}" >> fv3_run
   done
 else
@@ -204,7 +196,6 @@ export HIDE_LIAU=' '
 
 if [[ ${DATM_CDEPS} = 'true' ]] || [[ ${FV3} = 'true' ]] || [[ ${S2S} = 'true' ]]; then
   if [[ ${HAFS} = 'false' ]] || [[ ${FV3} = 'true' && ${HAFS} = 'true' ]]; then
-    echo "PT DEBUG: COASTAL: $COASTAL"
     if [[ ${COASTAL} = 'false' ]]; then
       atparse < "${PATHRT}"/parm/"${INPUT_NML:-input.nml.IN}" > input.nml
     fi
@@ -212,7 +203,6 @@ if [[ ${DATM_CDEPS} = 'true' ]] || [[ ${FV3} = 'true' ]] || [[ ${S2S} = 'true' ]
 fi
 
 if [[ -f ${PATHRT}/parm/${MODEL_CONFIGURE} ]]; then
-  echo "PT DEBUG: at parm/MODEL_CONFIGURE: /parm/${MODEL_CONFIGURE}, atparse"
   atparse < "${PATHRT}/parm/${MODEL_CONFIGURE}" > model_configure
 else
   echo "Cannot find file ${MODEL_CONFIGURE} set by variable MODEL_CONFIGURE"
@@ -226,7 +216,6 @@ else
 fi
 
 if [[ -f ${PATHRT}/parm/${UFS_CONFIGURE} ]]; then
-  echo "PT DEBUG: at parm/UFS_CONFIGURE /parm/${UFS_CONFIGURE}, atparse"
   (
     atparse < "${PATHRT}/parm/${UFS_CONFIGURE}" > ufs.configure
     if [[ ${ESMF_THREADING} != true ]]; then
@@ -247,7 +236,6 @@ if [[ "Q${INPUT_NEST02_NML:-}" != Q ]]; then
     export N_SPLIT_NEST=${N_SPLIT_NEST02:-}
     atparse < "${PATHRT}/parm/${INPUT_NEST02_NML}" > input_nest02.nml
 else
-    echo "PT DEBUG: else 1"
     sed -i -e "/<output_grid_02>/,/<\/output_grid_02>/d" model_configure
 fi
 
@@ -260,7 +248,6 @@ if [[ "Q${INPUT_NEST03_NML:-}" != Q ]]; then
     export N_SPLIT_NEST=${N_SPLIT_NEST03:-}
     atparse < "${PATHRT}/parm/${INPUT_NEST03_NML}" > input_nest03.nml
 else
-    echo "PT DEBUG: else 2"
     sed -i -e "/<output_grid_03>/,/<\/output_grid_03>/d" model_configure
 fi
 
@@ -336,7 +323,6 @@ fi
 cp "${PATHRT}/parm/fd_ufs.yaml" fd_ufs.yaml
 
 # Set up the run directory
-echo "PT DEBUG: sourcing fv3_run"
 source ./fv3_run
 
 if [[ ${CPLWAV} == .true. ]]; then
@@ -429,33 +415,23 @@ if [[ -n "${coupling_interval_slow_sec+x}" && -n "${coupling_interval_fast_sec+x
 fi
 
 
-echo "PT DEBUG: past all the atparse if if if if"
-echo "PT DEBUG: TPN: $TPN"
-echo "PT DEBUG: THRD: $THRD"
 TPN=$(( TPN / THRD ))
-echo "PT DEBUG: TPN2: $TPN"
 
-echo "PT DEBUG: TASKS: $TASKS"
 if (( TASKS < TPN )); then
   TPN=${TASKS}
 fi
 export TPN
-echo "PT DEBUG: TPN: $TPN"
 
 NODES=$(( TASKS / TPN ))
 if (( NODES * TPN < TASKS )); then
   NODES=$(( NODES + 1 ))
 fi
 export NODES
-echo "PT DEBUG: NODES: $NODES"
-
 
 # PT redefining TASKS!?!?
 UFS_TASKS=${TASKS}
 TASKS=$(( NODES * TPN ))
 export TASKS
-echo "PT DEBUG 2: TASKS: $TASKS"
-
 
 PPN=$(( UFS_TASKS / NODES ))
 if (( UFS_TASKS - ( PPN * NODES ) > 0 )); then
@@ -463,14 +439,10 @@ if (( UFS_TASKS - ( PPN * NODES ) > 0 )); then
 fi
 export PPN
 export UFS_TASKS
-echo "PT DEBUG: PPN: $PPN"
 
 if [[ ${ESMF_THREADING} != true ]]; then
   PPN=${TPN}
 fi
-echo "PT DEBUG: PPN=TPN: $PPN"
-
-echo "PT DEBUG: SCHEDULER is ${SCHEDULER}"
 
 if [[ ${SCHEDULER} = 'pbs' ]]; then
   if [[ -e ${PATHRT}/fv3_conf/fv3_qsub.IN_${MACHINE_ID} ]]; then
@@ -487,13 +459,9 @@ elif [[ ${SCHEDULER} = 'slurm' ]]; then
     exit 1
   fi
 elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
-  echo "PT DEBUG: create a run job card like we did for compile"
-  echo "PT DEBUG: SCHEDULER = cloudflow"
-
   PPN=$CFPPN
 
   if [[ -e ${PATHRT}/fv3_conf/fv3_${SCHEDULER}.IN_${MACHINE_ID} ]]; then
-    echo "PT DEBUG: calling atparse < ${PATHRT}/fv3_conf/fv3_${SCHEDULER}.IN_${MACHINE_ID}> job_card"
     atparse < "${PATHRT}/fv3_conf/fv3_${SCHEDULER}.IN_${MACHINE_ID}" > job_card
   else
     echo "Looking for fv3_conf/fv3_${SCHEDULER}.IN_${MACHINE_ID} but it is not found. Exiting"
@@ -514,7 +482,7 @@ fi
 # Submit test job
 ################################################################################
 export OMP_ENV=${OMP_ENV:-""}
-if [[ ${SCHEDULER} = 'none' ]]; then
+if [[ ${SCHEDULER} == 'none' ]]; then
   ulimit -s unlimited
   if [[ ${CI_TEST} = 'true' ]]; then
     eval "${OMP_ENV}" redirect_out_err mpiexec -n "${TASKS}" ./fv3.exe
@@ -522,15 +490,11 @@ if [[ ${SCHEDULER} = 'none' ]]; then
     redirect_out_err mpiexec -n "${TASKS}" ./fv3.exe
   fi
 
-#elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
-#  echo "PT DEBUG: Using cloudflow as a scheduler"
-#  echo "PT DEBUG: this should be run from the cloudflow workflow"
-#  echo "Should do a submit_and_wait like we did for compile"
-
+elif [[ ${SCHEDULER} == 'cloudflow' ]]; then
+  chmod u+x job_card
+  redirect_out_err ./job_card
 else
-
-  if [[ ${ROCOTO} = 'false' ]]; then
-    echo "PT DEBUG: Using cloudflow as a scheduler"
+  if [[ ${ROCOTO} == 'false' ]] && [[ ${SCHEDULER} != 'cloudflow' ]]; then
     submit_and_wait job_card
   else
     chmod u+x job_card
@@ -538,6 +502,7 @@ else
   fi
 
 fi
+
 skip_check_results=${skip_check_results:-false}
 if [[ ${skip_check_results} == false ]]; then
 
@@ -698,3 +663,4 @@ fi
 elapsed=${SECONDS}
 echo "run_test.sh: Test ${TEST_ID} Completed."
 echo "run_test.sh: Test ${TEST_ID} Elapsed time ${elapsed} seconds."
+

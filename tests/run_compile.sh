@@ -1,12 +1,9 @@
 #!/bin/bash
-#set -eux
 set -eu
 set -o pipefail
 
 echo "================================"
-echo "================================"
-echo "PT DEBUG: In run_compile.sh ..."
-echo "================================"
+echo " In run_compile.sh ..."
 echo "================================"
 
 echo "PID=$$"
@@ -16,11 +13,15 @@ trap '[ "$?" -eq 0 ] || write_fail_test' EXIT
 trap 'echo "run_compile.sh interrupted PID=$$"; cleanup' INT
 trap 'echo "run_compile.sh terminated PID=$$";  cleanup' TERM
 
+# trap 'echo "DEBUG: Failed at: $BASH_COMMAND" at $LINENO' ERR
+#trap '[ "$?" -eq 0 ] || echo "DEBUG: Error: Command [$BASH_COMMAND] failed on line $LINENO with exit code $?"' EXIT
+
 cleanup() {
   [[ ${ROCOTO} = 'false' ]] && interrupt_job
   trap 0
   exit
 }
+
 
 write_fail_test() {
   echo "${JBNME} failed in run_compile" >> "${PATHRT}/fail_${JBNME}"
@@ -57,17 +58,14 @@ export JBNME="compile_${COMPILE_ID}"
 cd "${PATHRT}"
 remove_fail_test
 
-echo "PT DEBUG: why does it source it twice here?"
-echo "PT DEBUG: what is in ${RUNDIR_ROOT}/${JBNME}.env"
-if [[ -e ${RUNDIR_ROOT}/${JBNME}.env ]]; then
-  source "${RUNDIR_ROOT}/${JBNME}.env"
-  cat "${RUNDIR_ROOT}/${JBNME}.env"
-fi
+# PT why twice? typo?
+#if [[ -e ${RUNDIR_ROOT}/${JBNME}.env ]]; then
+#  source "${RUNDIR_ROOT}/${JBNME}.env"
+#  cat "${RUNDIR_ROOT}/${JBNME}.env"
+#fi
 
-echo "PT DEBUG: sourcing default_vars.sh" 
 source default_vars.sh
 
-echo "PT DEBUG: what is in ${RUNDIR_ROOT}/${JBNME}.env"
 if [[ -e ${RUNDIR_ROOT}/${JBNME}.env ]]; then
   source "${RUNDIR_ROOT}/${JBNME}.env"
   cat "${RUNDIR_ROOT}/${JBNME}.env"
@@ -88,24 +86,22 @@ rm -rf "${RUNDIR}"
 mkdir -p "${RUNDIR}"
 cd "${RUNDIR}"
 
-if [[ ${SCHEDULER} = 'pbs' ]]; then
+if [[ ${SCHEDULER} == 'pbs' ]]; then
   if [[ -e ${PATHRT}/fv3_conf/compile_qsub.IN_${MACHINE_ID} ]]; then 
     atparse < "${PATHRT}/fv3_conf/compile_qsub.IN_${MACHINE_ID}" > job_card
   else
     echo "Looking for fv3_conf/compile_qsub.IN_${MACHINE_ID} but it is not found. Exiting"
     exit 1
   fi
-elif [[ ${SCHEDULER} = 'slurm' ]]; then
+elif [[ ${SCHEDULER} == 'slurm' ]]; then
   if [[ -e ${PATHRT}/fv3_conf/compile_slurm.IN_${MACHINE_ID} ]]; then
     atparse < "${PATHRT}/fv3_conf/compile_slurm.IN_${MACHINE_ID}" > job_card
   else
     echo "Looking for fv3_conf/compile_slurm.IN_${MACHINE_ID} but it is not found. Exiting"
     exit 1
   fi
-elif [[ ${SCHEDULER} = 'cloudflow' ]]; then
-  echo "PT DEBUG: SCHEDULER = cloudflow"
+elif [[ ${SCHEDULER} == 'cloudflow' ]]; then
   if [[ -e ${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID} ]]; then
-    echo "PT DEBUG: calling atparse < ${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID}> job_card"
     atparse < "${PATHRT}/fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID}" > job_card
   else
     echo "Looking for fv3_conf/compile_${SCHEDULER}.IN_${MACHINE_ID} but it is not found. Exiting"
@@ -117,20 +113,21 @@ fi
 # Submit compile job
 ################################################################################
 
-if [[ ${ROCOTO} = 'false' ]]; then
-  echo "PT DEBUG: calling submit_and_wait job_card"
-  cat job_card
+if [[ ${ROCOTO} == 'false' ]] && [[ ${SCHEDULER} != 'cloudflow' ]]; then
   submit_and_wait job_card
+elif [[ ${SCHEDULER} == 'cloudflow' ]]; then
+  chmod u+x job_card
+  redirect_out_err ./job_card >& "${RUNDIR}/${JBNME}_time.log"
 else
   chmod u+x job_card
-  redirect_out_err ./job_card
+  redirect_out_err ./job_card 
 fi
-#ls -l "${PATHTR}/tests/fv3_${COMPILE_ID}.exe"
 
+echo "PT: this line was causing a weird exit trap; nothing created ${JBNME}_time.log"
 cp "${RUNDIR}/${JBNME}_time.log" "${LOG_DIR}"
 cat "${RUNDIR}/job_timestamp.txt" >> "${LOG_DIR}/${JBNME}_timestamp.txt"
 
-echo "PT DEBUG: calling remove_fail_test()"
+# PT: assummes any errors will be trapped
 remove_fail_test
 
 ################################################################################

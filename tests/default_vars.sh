@@ -444,12 +444,8 @@ elif [[ ${MACHINE_ID} = ioossb ]]; then
   echo "PT: need to template this for on-demand cluster usage"
 
   # PT: TODO: make this a separate file and source it here.
-
-  TPN=96
-
-  # TODO: this does not fit with cloudflow, but we 
-  # won't be using rt.sh, just using it now to start with
-  # These will be set dynamically depending on the type and number of compute nodes used
+  # PT: TODO: need to setup and use a larger EFA supported node than the current 24 core
+  TPN=24
 
 #  export INPES_dflt=3
 #  export JNPES_dflt=8
@@ -559,8 +555,6 @@ export CA_SGS=.false.
 
 export_fv3 ()
 {
-
-echo "PT DEBUG: in export_fv3() default_vars.sh"
 
 #Set defaults if ATMRES and DT_ATMOS are not set
 export ATMRES=${ATMRES:-"C96"}
@@ -1884,7 +1878,6 @@ export_hafs_regional ()
 
 export_coastal ()
 {
-  echo "PT DEBUG: in export_coastal() default_vars.sh"
   export FV3=false
   export S2S=false
   export HAFS=false

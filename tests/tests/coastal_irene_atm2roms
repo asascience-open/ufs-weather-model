@@ -4,9 +4,6 @@
 #
 ###############################################################################
 
-echo "PT DEBUG: In coastal_irene_atm2roms configuration"
-echo "PT DEBUG: tests/coastal_irene_atm2roms"
-
 export TEST_DESCR="Compare coastal_irene_atm2roms results with previous trunk version"
 
 export CNTL_DIR=coastal_irene_atm2roms
@@ -80,7 +77,7 @@ export ATM_compute_tasks=12
 export OCN_tasks=12
 
 # configuration
-echo "PT DEBUG: These need to be dynamic for ioossb"
+# PT TODO: Check these for testing on a larger compute cluster/node
 
 export MODEL_CONFIGURE=model_configure.IN
 export UFS_CONFIGURE=ufs.configure.coastal_datm_ocn.IN

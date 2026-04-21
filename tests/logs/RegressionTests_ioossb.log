@@ -1,7 +1,7 @@
 ====START OF IOOSSB REGRESSION TESTING LOG====
 
 UFSWM hash used in testing:
-b51fcc4086f84e46d8a4ef5ff747f3f64f1b0da2
+ab5ada256f353f21e45d6b2ac464e2af14ca346c
 
 Submodule hashes used in testing:
  9376e19a41586317257fcb84c7e95de01eae4933 ADCIRC-interface/ADCIRC (heads/feature/coastal_app)
@@ -48,7 +48,7 @@ The second time is specifically for the run phase.
 Times/Memory will be empty for failed tests.
 
 BASELINE DIRECTORY: /com/ufs-weather-model/RT/NEMSfv3gfs/develop-20250721
-COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_645980
+COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_1172885
 
 RT.SH OPTIONS USED:
 * (-a) - HPC PROJECT ACCOUNT: IOOS
@@ -57,24 +57,20 @@ RT.SH OPTIONS USED:
 * (-n) - RUN SINGLE TEST: coastal_irene_atm2roms
 * (-k) - KEEP RUN DIRECTORY
 
-FAILED: UNABLE TO START COMPILE -- COMPILE 'atm2roms_intel' [, ]
-SKIPPED: ASSOCIATED COMPILE FAILED -- TEST 'coastal_irene_atm2roms_intel' [, ]( MB)
+PASS -- COMPILE 'atm2roms_intel' [08:00, 07:59]
+PASS -- TEST 'coastal_irene_atm2roms_intel' [04:50, 04:06](213 MB)
 
 SYNOPSIS:
-Starting Date/Time: 20260416 16:11:25
-Ending Date/Time: 20260416 16:16:50
-Total Time: 00h:05m:29s
-Compiles Completed: 0/1
-Tests Completed: 0/1
-Failed Compiles:
-* COMPILE atm2roms_intel: FAILED: UNABLE TO START COMPILE
--- LOG: N/A
+Starting Date/Time: 20260421 19:14:55
+Ending Date/Time: 20260421 19:27:45
+Total Time: 00h:12m:53s
+Compiles Completed: 1/1
+Tests Completed: 1/1
 
 NOTES:
-A file 'test_changes.list' was generated with list of all failed tests.
-You can use './rt.sh -c -b test_changes.list' to create baselines for the failed tests.
+A file 'test_changes.list' was generated but is empty.
 If you are using this log as a pull request verification, please commit 'test_changes.list'.
 
-Result: FAILURE
+Result: SUCCESS
 
 ====END OF IOOSSB REGRESSION TESTING LOG====

@@ -30,7 +30,6 @@ if [[ ${ARGC} -lt 2 ]]; then
   echostuff=$( fold -sw72 <<< "${echostuff}" )
   exit 1
 else
-  echo "PT DEBUG: compile.sh ARGS"
   MACHINE_ID=$1
   MAKE_OPT=${2:-}
   COMPILE_ID=${3:+$3}
@@ -56,8 +55,6 @@ BUILD_JOBS=${BUILD_JOBS:-8}
 
 #hostname
 
-echo "PT DEBUG: in comple.sh MACHINE_ID: $MACHINE_ID"
-set +x
 case ${MACHINE_ID} in
   macosx|linux)
     source "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}"
@@ -90,12 +87,9 @@ case ${MACHINE_ID} in
     # Load fv3 module
     module use "${PATHTR}/modulefiles"
     modulefile="ufs_${MACHINE_ID}.${RT_COMPILER}"
-    echo "PT DEBUG: trying to load modulefile: $modulefile"
-    echo "PT DEBUG: module using ${PATHTR}/modulefiles"
     module load "${modulefile}"
     module list
 esac
-set -x
 
 echo "Compiling ${MAKE_OPT} into ${BUILD_NAME}.exe on ${MACHINE_ID}"
 
@@ -150,3 +144,4 @@ fi
 elapsed=${SECONDS}
 echo "Elapsed time ${elapsed} seconds. Compiling ${CMAKE_FLAGS} finished"
 echo "Compile ${COMPILE_ID} elapsed time ${elapsed} seconds. ${CMAKE_FLAGS}" > "compile_${COMPILE_ID}_time.log"
+

@@ -25,8 +25,6 @@ source /opt/rh/gcc-toolset-13/enable
 
 # This is how it was done in compile step
 #modulefile="ufs_${MACHINE_ID}.${RT_COMPILER}"
-#echo "PT DEBUG: trying to load modulefile: $modulefile"
-#echo "PT DEBUG: module using ${PATHTR}/modulefiles"
 #module load "${modulefile}"
 #module list
 
@@ -42,9 +40,9 @@ echo "Model started:  " `date`
 
 # PT TODO: Check these
 #export MPI_TYPE_DEPTH=20
-# export OMP_STACKSIZE=512M
-# export KMP_AFFINITY=scatter
-# export OMP_NUM_THREADS=@[THRD]
+#export OMP_STACKSIZE=512M
+#export KMP_AFFINITY=scatter
+#export OMP_NUM_THREADS=@[THRD]
 #export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
 #export PSM_RANKS_PER_CONTEXT=4
 #export PSM_SHAREDCONTEXTS=1
@@ -75,7 +73,6 @@ jobname="@[JBNME]"
 export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
 export I_MPI_DEBUG=0
 
-
 #export FI_PROVIDER=efa
 #export I_MPI_FABRICS=ofi
 #export I_MPI_OFI_PROVIDER=efa
@@ -92,7 +89,11 @@ export I_MPI_DEBUG=0
 
 MPIOPTS="-launcher ssh -hosts $HOSTS -np $NPROCS -ppn $PPN"
 
-mpirun $MPIOPTS ./fv3.exe >& ${jobname}.out
+# generate_log expects some output to be in "out"
+#mpirun $MPIOPTS ./fv3.exe >& ${jobname}.out
+
+# Need to redirect stdin from /dev/null to not interfere with rt.sh read line < TESTS_FILE stdin
+mpirun $MPIOPTS ./fv3.exe < /dev/null
 rc=$?
 if [[ $rc -eq 0 ]]; then
     echo 'Model run completed successfully'

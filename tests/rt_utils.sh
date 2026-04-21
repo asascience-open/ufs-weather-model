@@ -22,10 +22,8 @@ redirect_out_err() {
 }
 
 
-# PT: Why is this the first place I see the usage of "function" keyword, why is it here?
-function compute_petbounds_and_tasks_traditional_threading() {
 
-  echo "PT DEBUG: IN compute_petbounds_and_tasks_traditional_threading()"
+function compute_petbounds_and_tasks_traditional_threading() {
 
   # each test MUST define ${COMPONENT}_tasks variable for all components it is using
   # and MUST NOT define those that it's not using or set the value to 0.
@@ -143,10 +141,6 @@ function compute_petbounds_and_tasks_traditional_threading() {
 
 
 function compute_petbounds_and_tasks_esmf_threading() {
-
-  echo "PT DEBUG: IN compute_petbounds_and_tasks_esmf_threading()"
-  set -x
-
 
   # each test MUST define ${COMPONENT}_tasks variable for all components it is using
   # and MUST NOT define those that it's not using or set the value to 0.
@@ -276,16 +270,11 @@ submit_and_wait() {
       re='Submitted batch job ([0-9]+)'
       [[ "${slurmout}" =~ ${re} ]] && jobid=${BASH_REMATCH[1]}
       ;;
-    cloudflow)   # TODO: Could also just be local instead cloudflow
-      echo "PT DEBUG: in submit_and_wait()"
-      echo "PT: Not using slurm or pbs ... using cloudflow"
-      echo "PT DEBUG: job_card=$1"
-      # cat $job_card
-
+    cloudflow)
+      # PT - Not currently using submit_and_wait for cloudflow, was testing
       chmod u+x $job_card
-      ./$job_card &
+      redirect_out_err ./$job_card
       jobid=$!
-      echo "PT DEBUG: jobid is: $jobid"
       ;;
     *)
       echo "Unsupported scheduler: ${SCHEDULER}"
@@ -367,6 +356,7 @@ submit_and_wait() {
         status=$( awk '{print $2}' <<< "${status}" )
         ;;
       cloudflow)
+        # PT - Not currently using submit_and_wait for cloudflow
         job_info=$( ps -p "${jobid}" )
           if grep -q "${jobid}" <<< "${job_info}"; then
             job_running=true
@@ -374,7 +364,6 @@ submit_and_wait() {
           else
             job_running=false
             status='COMPLETED'
-            echo "PT DEBUG: TODO - check for failed status"
           fi
         ;;
       *)
