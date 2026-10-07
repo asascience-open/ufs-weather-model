@@ -10,6 +10,10 @@ if( $ENV{FC} MATCHES "mpiifort" )
   set( COMM "intel" )
 endif()
 
+if( $ENV{FC} MATCHES "mpiifx" )
+  set( COMM "intel" )
+endif()
+
 message( STATUS "CMAKE_Fortran_FLAGS = ${CMAKE_Fortran_FLAGS}" )
 message( STATUS "COMM = ${COMM}" )
 

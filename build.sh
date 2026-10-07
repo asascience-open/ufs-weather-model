@@ -30,8 +30,13 @@ cmake "${UFS_MODEL_DIR}" "${ARR_CMAKE_FLAGS[@]}"
 if [ $(nproc) -eq 1 ]; then
   BUILD_JOBS=1
 else
+  # echo "Testing ... debugging"
+  # BUILD_JOBS=1
   BUILD_JOBS=$(($(nproc)/2))
+  echo "$BUILD_JOBS"
 fi
+
+
 
 make -j "${BUILD_JOBS:-4}" "VERBOSE=${BUILD_VERBOSE:-}"
 
