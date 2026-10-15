@@ -74,7 +74,7 @@ case ${MACHINE_ID} in
       module purge
 
       # newer gcc is needed for libm 
-      source /opt/rh/gcc-toolset-13/enable
+      # source /opt/rh/gcc-toolset-13/enable
      
       BUILD_JOBS=2
       if [ $(nproc) -eq 1 ]; then

@@ -103,9 +103,9 @@ cp "${PATHRT}/fv3_${COMPILE_ID}.exe" "fv3.exe"
 mkdir -p modulefiles
 if [[ ${MACHINE_ID} == linux ]]; then
   cp "${PATHRT}/modules.fv3_${COMPILE_ID}" "./modulefiles/modules.fv3"
-elif [[ ${MACHINE_ID} == ioossb ]]; then
-  echo "PT TODO: test spack-stack lua modules again. Had circular depependency issues previously"
-  cp "${PATHRT}/modules.fv3_${COMPILE_ID}" "./modulefiles/modules.fv3"
+#elif [[ ${MACHINE_ID} == ioossb ]]; then
+#  echo "PT TODO: test spack-stack lua modules again. Had circular depependency issues previously"
+#  cp "${PATHRT}/modules.fv3_${COMPILE_ID}" "./modulefiles/modules.fv3"
 else
   echo "cp ${PATHRT}/modules.fv3_${COMPILE_ID}.lua ./modulefiles/modules.fv3.lua"
   cp "${PATHRT}/modules.fv3_${COMPILE_ID}.lua" "./modulefiles/modules.fv3.lua"

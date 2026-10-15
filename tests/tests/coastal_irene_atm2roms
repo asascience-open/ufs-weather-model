@@ -21,6 +21,9 @@ export SMONTH=08
 export SDAY=27
 export SHOUR=06
 export FHMAX=42
+#PT Testing
+# export FHMAX=3
+
 export FHROT=0
 # not used
 export DT_ATMOS=720
@@ -82,19 +85,27 @@ export OCN_tasks=12
 export MODEL_CONFIGURE=model_configure.IN
 export UFS_CONFIGURE=ufs.configure.coastal_datm_ocn.IN
 export med_model=cmeps
-export med_petlist_bounds="0 23"
-export med_omp_num_threads=1
 export atm_model=datm
-export atm_petlist_bounds="0 11"
-export atm_omp_num_threads=1
 export ocn_model=roms
-export ocn_petlist_bounds="12 23"
-export ocn_omp_num_threads=1
+
+# This doesn't seem to actually make it to the run config, seems to be written someplace else
+#
+# Testing to see if this is actually set from here
+# Doesnt seem to matter, ufs.configure gets written from someplace else this stuff is uselesss
+#export med_petlist_bounds="0 95"
+#export med_omp_num_threads=1
+#export atm_petlist_bounds="0 23"
+#export atm_omp_num_threads=1
+#export ocn_petlist_bounds="48 95"
+#export ocn_omp_num_threads=1
+
 export coupling_interval_slow_sec=60
 export RESTART_N=12
 export RUNTYPE=startup
 export CPLMODE=coastal
 export coupling_config=roms_cmeps_era5.yaml
+
 # input files
 export FV3_RUN="coastal_roms_run.IN"
 export CMP_DATAONLY=true
+

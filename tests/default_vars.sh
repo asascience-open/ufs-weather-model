@@ -443,12 +443,33 @@ elif [[ ${MACHINE_ID} = ioossb ]]; then
   echo "In default_vars $MACHINE_ID, setting TPN ..."
   echo "PT: need to template this for on-demand cluster usage"
 
-  # PT: TODO: make this a separate file and source it here.
+  # PT: TODO: make this a separate file and source it here to make it dependant on the cloudflow cluster config
   # PT: TODO: need to setup and use a larger EFA supported node than the current 24 core
+  set -x
   TPN=24
+  #export TPN=24
+  export PATRICKSHERE="YES"
 
-#  export INPES_dflt=3
-#  export JNPES_dflt=8
+  echo "PT DEBUG ---- in default_vars.sh ----"
+  echo "PATRICKSHERE: $PATRICKSHERE"
+  printenv 
+
+  # Original test is 3x4
+  #export INPES=6
+  #export JNPES=8
+
+  #export ROMSTILEI=6
+  export ROMSTILEI=3
+  #export ROMSTILEJ=8
+  export ROMSTILEJ=4
+
+  # Used by Irene ROMS template
+  # /com/ufs-weather-model/RT/NEMSfv3gfs/input-data-20250507/ROMS/IRENE/Coupling/roms_data_cmeps/roms_irene.tmpl
+  # Was hardcoded to 3x4 in
+  # ufs-weather-model/tests/fv3_conf/coastal_roms_run.IN
+  # Now set buy ROMSTILEI/J
+  
+  set +x
 #
 #  export INPES_thrd=3
 #  export JNPES_thrd=4
