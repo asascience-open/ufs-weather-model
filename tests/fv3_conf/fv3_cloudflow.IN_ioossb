@@ -31,20 +31,21 @@ module load modules.fv3
 module list
 
 # Set fi fabric to AWS if using it
-
-# export I_MPI_OFI_LIBRARY_INTERNAL=1   # 0: use aws efa fabric 1: use intel efa fabric
-set -x
-
-export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
-export I_MPI_FABRICS=ofi
+# export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+export I_MPI_OFI_LIBRARY_INTERNAL=1   # 0: use aws efa fabric 1: use intel efa fabric
+export I_MPI_FABRICS=shm:ofi
 
 # Turn this off if the node type does not support efa
-#export I_MPI_OFI_PROVIDER=efa
-#export FI_PROVIDER=efa
-export I_MPI_DEBUG=1
+# export I_MPI_OFI_PROVIDER=efa
+# export FI_PROVIDER=efa
+# Might default to sockets - sockets is really slow
+# Might be needed for AWS fabric
+#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
 
-export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
-export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+# export FI_PROVIDER=shm
+export I_MPI_DEBUG=1
+export I_MPI_OFI_PROVIDER_DUMP=1
 
 ulimit -s unlimited
 
@@ -90,13 +91,16 @@ jobname="@[JBNME]"
 
 MPIOPTS="-launcher ssh -hosts $HOSTS -np $NPROCS -ppn $PPN"
 
-# generate_log expects some output to be in "out"
-#mpirun $MPIOPTS ./fv3.exe >& ${jobname}.out
+# mpirun $MPIOPTS ./fv3.exe >& ${jobname}.out
 
 # Need to redirect stdin from /dev/null to not interfere with rt.sh read line < TESTS_FILE stdin
-#mpirun $MPIOPTS ./fv3.exe < /dev/null
-#
-mpirun $MPIOPTS ./fv3.exe < /dev/null >& ${jobname}.out
+# generate_log expects some output to be in "out"
+mpirun $MPIOPTS ./fv3.exe < /dev/null >& out
+
+# Can use tee to output to two file
+# mpirun $MPIOPTS ./fv3.exe < /dev/null | tee 
+# your_command > >(tee file1.log > file2.log) 2>&1
+
 rc=$?
 if [[ $rc -eq 0 ]]; then
     echo 'Model run completed successfully'

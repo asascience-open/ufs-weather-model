@@ -20,11 +20,11 @@ export SYEAR=2011
 export SMONTH=08
 export SDAY=27
 export SHOUR=06
+
 export FHMAX=42
-#PT Testing
-# export FHMAX=3
 
 export FHROT=0
+
 # not used
 export DT_ATMOS=720
 export RESTART_INTERVAL=0
@@ -88,10 +88,8 @@ export med_model=cmeps
 export atm_model=datm
 export ocn_model=roms
 
-# This doesn't seem to actually make it to the run config, seems to be written someplace else
-#
-# Testing to see if this is actually set from here
-# Doesnt seem to matter, ufs.configure gets written from someplace else this stuff is uselesss
+# This is not actually set from here
+# ufs.configure gets written from someplace else
 #export med_petlist_bounds="0 95"
 #export med_omp_num_threads=1
 #export atm_petlist_bounds="0 23"

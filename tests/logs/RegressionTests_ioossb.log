@@ -1,7 +1,7 @@
 ====START OF IOOSSB REGRESSION TESTING LOG====
 
 UFSWM hash used in testing:
-ab5ada256f353f21e45d6b2ac464e2af14ca346c
+6a31209dd17462c1888bd7428400cea15676d0c2
 
 Submodule hashes used in testing:
  9376e19a41586317257fcb84c7e95de01eae4933 ADCIRC-interface/ADCIRC (heads/feature/coastal_app)
@@ -10,7 +10,7 @@ Submodule hashes used in testing:
  b0c46a371c884579edce76bda31eb3beaa41a187 CDEPS-interface/CDEPS (b0c46a3)
  d27928251e566ad7ca3f4f92f82cc13b22396159 CICE-interface/CICE (d279282)
  36649118c13d77bdd63e23024f6cc0269a5bc681 CICE-interface/CICE/icepack (3664911)
- ffe1a0deae4c6b9b378ab5a28430be3ab273ec51 CMEPS-interface/CMEPS (ffe1a0d)
+ ffe1a0deae4c6b9b378ab5a28430be3ab273ec51 CMEPS-interface/CMEPS (ffe1a0de)
  9b7652c75b40d9cbb40e52b824f8c0a423922757 CMakeModules (9b7652c)
  e5b040cca39537499130260e0b65425543416f03 FV3 (remotes/origin/production/HREF.v3beta-390-ge5b040c)
  11359cb04a420fc87e4cf0f035f4d1215ab24488 FV3/ccpp/framework (2025-01-06-dev-5-g11359cb)
@@ -33,7 +33,7 @@ Submodule hashes used in testing:
  1a2d2fcb02da38e975f252ef743af24b68b3cc7f NOAHMP-interface/noahmp (v3.7.1-455-g1a2d2fc)
  43d805eeb9debbbc95f7919d1d68c600d5ad4634 PAHM-interface/PAHM (43d805ee)
  5a15936cc4a307e3100c52ee209a593b463856e5 ROMS-interface/ROMS (heads/develop)
- 6cd13f545e1ec67b60ca7201d141451ac27147f5 SCHISM-interface/SCHISM (remotes/origin/v5.14-35-g6cd13f54)
+ 6cd13f545e1ec67b60ca7201d141451ac27147f5 SCHISM-interface/SCHISM (6cd13f54)
  24749f91505b43001e532d3f1ac24ebc2b576d7e SCHISM-interface/SCHISM/src/GOTM5.2/code (v5.2.1)
  85e445deabacca09689070cbb7069a1ed3d36c31 SCHISM-interface/SCHISM-ESMF (remotes/origin/feature/schism_3d-24-g85e445d)
  0983abb26ce338ee67b8e94451601e67f5f937e8 WW3 (remotes/origin/feature/ww3-95-g0983abb2)
@@ -48,7 +48,7 @@ The second time is specifically for the run phase.
 Times/Memory will be empty for failed tests.
 
 BASELINE DIRECTORY: /com/ufs-weather-model/RT/NEMSfv3gfs/develop-20250721
-COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_1172885
+COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_82309
 
 RT.SH OPTIONS USED:
 * (-a) - HPC PROJECT ACCOUNT: IOOS
@@ -57,13 +57,13 @@ RT.SH OPTIONS USED:
 * (-n) - RUN SINGLE TEST: coastal_irene_atm2roms
 * (-k) - KEEP RUN DIRECTORY
 
-PASS -- COMPILE 'atm2roms_intel' [08:00, 07:59]
-PASS -- TEST 'coastal_irene_atm2roms_intel' [04:50, 04:06](213 MB)
+PASS -- COMPILE 'atm2roms_intel' [08:20, 08:20]
+PASS -- TEST 'coastal_irene_atm2roms_intel' [04:49, 04:05](216 MB)
 
 SYNOPSIS:
-Starting Date/Time: 20260421 19:14:55
-Ending Date/Time: 20260421 19:27:45
-Total Time: 00h:12m:53s
+Starting Date/Time: 20261020 20:51:58
+Ending Date/Time: 20261020 21:05:07
+Total Time: 00h:13m:15s
 Compiles Completed: 1/1
 Tests Completed: 1/1
 
