@@ -9,6 +9,7 @@ prepend_path("MODULEPATH", "/save/environments/spack-stack.v2.1.0/envs/aws-iooss
 
 load("stack-intel-oneapi-compilers/2024.2.1")
 load("intel/compiler/2024.2.1")
+load("intel/ifort/2024.2.1")
 load("intel/mpi/2021.16")
 load("intel/mkl/2024.2")
 load("netcdf-c/4.9.2")
@@ -44,12 +45,12 @@ setenv("METIS_PATH","/mnt/efs/fs1/save/environments/spack-stack.v2.1.0/envs/aws-
 
 setenv("CC", "mpiicx")
 setenv("CXX", "mpiicpx")
-setenv("FC", "mpiifx")
+setenv("FC", "mpiifort")
 
 setenv("I_MPI_CC", "icx")
 setenv("I_MPI_CXX","icpx")
-setenv("I_MPI_FC", "ifx")
+setenv("I_MPI_FC", "ifort")
 
-setenv("CMAKE_Platform", "ioossb.intelllvm")
+setenv("CMAKE_Platform", "ioossb.intel")
 
 whatis("Description: UFS build environment")

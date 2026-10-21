@@ -15,7 +15,6 @@
 set -eux
 echo -n " $( date +%s )," >  job_timestamp.txt
 
-set +x
 MACHINE_ID=ioossb
 source ./module-setup.sh
 module use $PWD/modulefiles
@@ -30,22 +29,34 @@ module use $PWD/modulefiles
 module load modules.fv3
 module list
 
+echo "PT DEBUG in: fv3_conf/fv3_cloudflow.IN_ioossb (job.card)"
+set -x
+
 # Set fi fabric to AWS if using it
-# export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
-export I_MPI_OFI_LIBRARY_INTERNAL=1   # 0: use aws efa fabric 1: use intel efa fabric
-export I_MPI_FABRICS=shm:ofi
+export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+
+#export I_MPI_OFI_LIBRARY_INTERNAL=1   # 0: use aws efa fabric 1: use intel efa fabric
+#export I_MPI_FABRICS=shm:ofi
 
 # Turn this off if the node type does not support efa
 # export I_MPI_OFI_PROVIDER=efa
 # export FI_PROVIDER=efa
+
 # Might default to sockets - sockets is really slow
 # Might be needed for AWS fabric
-#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
-#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+
+# Testing
+export I_MPI_FABRICS=shm
+export I_MPI_DEBUG=5
+
+unset I_MPI_OFI_PROVIDER
+unset FI_PROVIDER
 
 # export FI_PROVIDER=shm
-export I_MPI_DEBUG=1
-export I_MPI_OFI_PROVIDER_DUMP=1
+# export I_MPI_DEBUG=1
+# Not supported with aws fabric export I_MPI_OFI_PROVIDER_DUMP=1
 
 ulimit -s unlimited
 
@@ -77,24 +88,18 @@ if [ "${JOB_SHOULD_FAIL:-NO}" = WHEN_RUNNING ] ; then
     false
 fi
 
-#PT TODO: add logic to turn on efa, hacky way for now
-NUM_HOSTS=${#HOSTS[@]}
-if [ $NUM_HOSTS > 1 ]; then
-  export I_MPI_OFI_PROVIDER=efa
-  export FI_PROVIDER=efa
-fi
-
 HOSTS=@[HOSTS]
 NPROCS=@[NPROCS]
 PPN=@[PPN]
 
-jobname="@[JBNME]"
-
-#if [[ ! $HOSTS =~ 'localhost' ]]; then
-#  export FI_PROVIDER=efa
-#  export I_MPI_FABRICS=ofi
+#PT logic to turn on efa, hacky way for now
+#Multiple hosts, should be using EFA
+#if [ $NPROCS > $PPN ]; then
 #  export I_MPI_OFI_PROVIDER=efa
+#  export FI_PROVIDER=efa
 #fi
+
+jobname="@[JBNME]"
 
 MPIOPTS="-launcher ssh -hosts $HOSTS -np $NPROCS -ppn $PPN"
 
