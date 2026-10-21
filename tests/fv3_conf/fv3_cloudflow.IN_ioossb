@@ -77,6 +77,13 @@ if [ "${JOB_SHOULD_FAIL:-NO}" = WHEN_RUNNING ] ; then
     false
 fi
 
+#PT TODO: add logic to turn on efa, hacky way for now
+NUM_HOSTS=${#HOSTS[@]}
+if [ $NUM_HOSTS > 1 ]; then
+  export I_MPI_OFI_PROVIDER=efa
+  export FI_PROVIDER=efa
+fi
+
 HOSTS=@[HOSTS]
 NPROCS=@[NPROCS]
 PPN=@[PPN]
