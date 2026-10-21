@@ -60,7 +60,7 @@ _deps
 coupled*.mk
 rt.conf.single
 ufs_model
-tests/modules.fv3_*
+# tests/modules.fv3_*
 tests/ecflow_run/
 tests/ecf_comdir/
 tests/ecf_outputdir/

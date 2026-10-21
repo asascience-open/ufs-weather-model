@@ -3,5 +3,5 @@ if [ ! -d "INPUT" ]; then
 fi
 
 cd INPUT
-rsync -arv @[INPUTDATA_ROOT]/DATM_input_data/$HURR/$CPL_CONF/* .
+rsync -arv @[INPUTDATA_ROOT]/SCHISM/$HURR/$CPL_CONF/* .
 cd -

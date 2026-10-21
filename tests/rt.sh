@@ -494,7 +494,10 @@ Result: SUCCESS
 ====END OF ${MACHINE_ID^^} REGRESSION TESTING LOG====
 EOF
     echo "Performing Cleanup..."
-    rm -f fv3_*.x fv3_*.exe modules.fv3_* modulefiles/modules.fv3_* keep_tests.tmp
+
+    if [[  "$MACHINE_ID" != "ioossb" ]]; then
+      rm -f fv3_*.x fv3_*.exe modules.fv3_* modulefiles/modules.fv3_* keep_tests.tmp
+    fi
     [[ ${KEEP_RUNDIR} == false ]] && rm -rf "${RUNDIR_ROOT}" && rm "${PATHRT}/run_dir"
     [[ ${ROCOTO} == true ]] && rm -f "${ROCOTO_XML}" "${ROCOTO_DB}" "${ROCOTO_STATE}" ./*_lock.db
     [[ ${TEST_35D} == true ]] && rm -f tests/cpld_bmark*_20*
