@@ -132,9 +132,6 @@ bash -x "${PATHTR}/build.sh"
 rsync --remove-source-files "${BUILD_DIR}/ufs_model" "${PATHTR}/tests/${BUILD_NAME}.exe"
 if [[ ${MACHINE_ID} == linux ]]; then
   cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}" "${PATHTR}/tests/modules.${BUILD_NAME}"
-elif [[ ${MACHINE_ID} == ioossb ]]; then
-  echo "PT: TODO - initially had some spack-stack issues with lua modulefiles"
-  cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}" "${PATHTR}/tests/modules.${BUILD_NAME}"
 else
   cp "${PATHTR}/modulefiles/ufs_${MACHINE_ID}.${RT_COMPILER}.lua" "${PATHTR}/tests/modules.${BUILD_NAME}.lua"
 fi

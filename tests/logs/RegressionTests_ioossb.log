@@ -1,7 +1,7 @@
 ====START OF IOOSSB REGRESSION TESTING LOG====
 
 UFSWM hash used in testing:
-1fb2aa83f487fad7acf05303375d6bde78ac2907
+d4dfb1086512955771b539049f0c461fdced658e
 
 Submodule hashes used in testing:
  9376e19a41586317257fcb84c7e95de01eae4933 ADCIRC-interface/ADCIRC (heads/feature/coastal_app)
@@ -48,7 +48,7 @@ The second time is specifically for the run phase.
 Times/Memory will be empty for failed tests.
 
 BASELINE DIRECTORY: /com/ufs-weather-model/RT/NEMSfv3gfs/develop-20250721
-COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_324693
+COMPARISON DIRECTORY: /ptmp/ec2-user/FV3_RT/rt_342100
 
 RT.SH OPTIONS USED:
 * (-a) - HPC PROJECT ACCOUNT: IOOS
@@ -57,13 +57,13 @@ RT.SH OPTIONS USED:
 * (-n) - RUN SINGLE TEST: coastal_irene_atm2roms
 * (-k) - KEEP RUN DIRECTORY
 
-PASS -- COMPILE 'atm2roms_intel' [08:16, 08:15]
-PASS -- TEST 'coastal_irene_atm2roms_intel' [04:49, 04:08](191 MB)
+PASS -- COMPILE 'atm2roms_intel' [08:25, 08:25]
+PASS -- TEST 'coastal_irene_atm2roms_intel' [04:50, 04:08](195 MB)
 
 SYNOPSIS:
-Starting Date/Time: 20261021 18:09:01
-Ending Date/Time: 20261021 18:22:06
-Total Time: 00h:13m:09s
+Starting Date/Time: 20261021 19:29:48
+Ending Date/Time: 20261021 19:43:04
+Total Time: 00h:13m:21s
 Compiles Completed: 1/1
 Tests Completed: 1/1
 

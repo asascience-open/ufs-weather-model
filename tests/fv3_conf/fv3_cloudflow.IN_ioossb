@@ -33,8 +33,7 @@ echo "PT DEBUG in: fv3_conf/fv3_cloudflow.IN_ioossb (job.card)"
 set -x
 
 # Set fi fabric to AWS if using it
-export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
-
+# export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
 #export I_MPI_OFI_LIBRARY_INTERNAL=1   # 0: use aws efa fabric 1: use intel efa fabric
 #export I_MPI_FABRICS=shm:ofi
 
@@ -44,15 +43,38 @@ export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa f
 
 # Might default to sockets - sockets is really slow
 # Might be needed for AWS fabric
+#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+
+# Test 1 Irene pass 241.47 seconds
+#export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+#export I_MPI_FABRICS=shm
+#export I_MPI_DEBUG=5
+#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+#unset I_MPI_OFI_PROVIDER
+#unset FI_PROVIDER
+
+# Test 2 Irene 239.292961 seconds - says it is using sockets
+#export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+#export I_MPI_DEBUG=5
+#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+
+# Test 3 Irene 241.80 seconds
+#export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+#export I_MPI_DEBUG=5
+#export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
+#export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+#export I_MPI_FABRICS=shm
+
+# Test 4 Irene 233.712086 seconds
+export I_MPI_OFI_LIBRARY_INTERNAL=0   # 0: use aws efa fabric 1: use intel efa fabric
+export I_MPI_DEBUG=5
 export LD_LIBRARY_PATH="/opt/amazon/efa/lib64:$LD_LIBRARY_PATH"
 export FI_PROVIDER_PATH=/opt/amazon/efa/lib64/libfabric
+export I_MPI_FABRICS=shm:ofi
 
-# Testing
-export I_MPI_FABRICS=shm
-export I_MPI_DEBUG=5
-
-unset I_MPI_OFI_PROVIDER
-unset FI_PROVIDER
 
 # export FI_PROVIDER=shm
 # export I_MPI_DEBUG=1
