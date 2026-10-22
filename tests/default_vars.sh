@@ -441,11 +441,15 @@ elif [[ ${MACHINE_ID} = frontera ]]; then
 elif [[ ${MACHINE_ID} = ioossb ]]; then
 
   echo "In default_vars $MACHINE_ID, setting TPN ..."
-  # PT TODO:  maybe template this for on-demand cluster usage"
+  # This is set by cloudflow
+  TPN=$CFPPN
+  echo "TPN : $TPN"
 
-  # PT: TODO: make this a separate file and source it here to make it dependant on the cloudflow cluster config
-  # 24 cores on c6i.12xlarge runs in about 6 minutes, shm:ofi
-  TPN=24
+
+  # ROMSTILE used by Irene ROMS template
+  # /com/ufs-weather-model/RT/NEMSfv3gfs/input-data-20250507/ROMS/IRENE/Coupling/roms_data_cmeps/roms_irene.tmpl
+  # Was hardcoded to 3x4 in ufs-weather-model/tests/fv3_conf/coastal_roms_run.IN
+  # Is now set by ROMSTILEI/J, defaults to 3x4 if they aren't defined
 
   # PT TODO: come back to this
   #export ROMSTILEI=6
@@ -454,29 +458,25 @@ elif [[ ${MACHINE_ID} = ioossb ]]; then
   export ROMSTILEI=3
   export ROMSTILEJ=4
 
-  # Used by Irene ROMS template
-  # /com/ufs-weather-model/RT/NEMSfv3gfs/input-data-20250507/ROMS/IRENE/Coupling/roms_data_cmeps/roms_irene.tmpl
-  # Was hardcoded to 3x4 in
-  # ufs-weather-model/tests/fv3_conf/coastal_roms_run.IN
-  # Is now set by ROMSTILEI/J will use defaults 3x4 if they aren't defined
+  export INPES_dflt=3
+  export JNPES_dflt=8
 
-#  export INPES_thrd=3
-#  export JNPES_thrd=4
-#
-#  export INPES_c384=8
-#  export JNPES_c384=6
-#  export THRD_c384=1
-#
-#  export INPES_c768=8
-#  export JNPES_c768=16
-#  export THRD_c768=1
-#
-#  export THRD_cpl_atmw_gdas=1
-#  export INPES_cpl_atmw_gdas=6
-#  export JNPES_cpl_atmw_gdas=8
-#
-#  export WPG_cpl_atmw_gdas=24
-#  export WAV_tasks_atmw_gdas=248
+  export INPES_thrd=3
+  export JNPES_thrd=4
+
+  export INPES_c384=8
+  export JNPES_c384=6
+  export THRD_c384=2
+
+  export INPES_c768=8
+  export JNPES_c768=16
+  export THRD_c768=2
+
+  export THRD_cpl_atmw_gdas=2
+  export INPES_cpl_atmw_gdas=6
+  export JNPES_cpl_atmw_gdas=8
+  export WPG_cpl_atmw_gdas=24
+  export WAV_tasks_atmw_gdas=248
 
 else
 

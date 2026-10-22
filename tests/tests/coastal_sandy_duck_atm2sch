@@ -56,7 +56,7 @@ JMO=190
 WRITE_NSFLIP=.false.
 OUTPUT_FH="12 -1"
 IAU_OFFSET=0
-if [[ " hera orion hercules gaea jet frontera " =~ " ${MACHINE_ID} " ]] ; then
+if [[ " ioossb hera orion hercules gaea jet frontera " =~ " ${MACHINE_ID} " ]] ; then
   ZSTANDARD_LEVEL=5
 fi
 
@@ -71,7 +71,10 @@ ATM_NY_GLB=721
 EXPORT_ALL=.true.
 FILENAME_BASE='atmmesh.'
 STREAM_VECTORS="null"
+
+# Missing this file
 stream_files="\"INPUT/era5_data_30min_obs_wind_rot_fix_filled.nc\""
+
 stream_variables="\"u10 Sa_u10m\" \"v10 Sa_v10m\" \"msl Sa_pslv\""
 mapalgo=redist
 dtlimit=1.5
@@ -82,22 +85,25 @@ HURR="Sandy"
 CPL_CONF="atm2sch"
 
 # pes
-ATM_compute_tasks=160
-OCN_tasks=160
+ATM_compute_tasks=48
+OCN_tasks=48
 
 # configuration
 MODEL_CONFIGURE=model_configure.IN
 UFS_CONFIGURE=ufs.configure.coastal_datm_ocn.IN
+
+# petlist_bounds get reset by rt_utils.sh
 med_model=cmeps
-med_petlist_bounds="0 159"
+med_petlist_bounds="0 47"
 med_omp_num_threads=1
 atm_model=datm
-atm_petlist_bounds="0 159"
+atm_petlist_bounds="0 47"
 atm_omp_num_threads=1
 ocn_model=schism
-ocn_petlist_bounds="0 159"
+ocn_petlist_bounds="48 95"
 ocn_omp_num_threads=1
 coupling_interval_slow_sec=1800
+
 RESTART_N=6
 RUNTYPE=startup
 CPLMODE=coastal
@@ -105,3 +111,4 @@ meshloc=element
 
 # input files
 FV3_RUN="coastal_datm.IN coastal_schism_run.IN"
+
